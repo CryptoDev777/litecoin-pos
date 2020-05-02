@@ -24,8 +24,10 @@
 
 #include <map>
 #include <vector>
+#include <atomic>
 
 #include <QObject>
+#include <QThread>
 
 enum class OutputType;
 
@@ -35,6 +37,7 @@ class PlatformStyle;
 class RecentRequestsTableModel;
 class TransactionTableModel;
 class WalletModelTransaction;
+class WalletWorker;
 
 class CCoinControl;
 class CKeyID;
@@ -184,6 +187,8 @@ public:
     // Passphrase only needed when unlocking
     bool setWalletLocked(bool locked, const SecureString &passPhrase=SecureString());
     bool changePassphrase(const SecureString &oldPass, const SecureString &newPass);
+    bool getWalletUnlockStakingOnly();
+    void setWalletUnlockStakingOnly(bool unlock);
 
     // RAI object for unlocking wallet, returned by requestUnlock()
     class UnlockContext
@@ -203,6 +208,7 @@ public:
         WalletModel *wallet;
         bool valid;
         mutable bool relock; // mutable, as it can be set to false by copying
+        bool stakingOnly;
 
         UnlockContext& operator=(const UnlockContext&) = default;
         void CopyFrom(UnlockContext&& rhs);
@@ -226,6 +232,8 @@ public:
     QString getDisplayName() const;
 
     bool isMultiwallet();
+
+    uint64_t getStakeWeight();
 
     AddressTableModel* getAddressTableModel() const { return addressTableModel; }
 private:
@@ -255,9 +263,15 @@ private:
     EncryptionStatus cachedEncryptionStatus;
     int cachedNumBlocks;
 
+    QThread t;
+    WalletWorker *worker;
+
+    uint64_t nWeight;
+    std::atomic<bool> updateStakeWeight;
+
     void subscribeToCoreSignals();
     void unsubscribeFromCoreSignals();
-    void checkBalanceChanged(const interfaces::WalletBalances& new_balances);
+    bool checkBalanceChanged(const interfaces::WalletBalances& new_balances);
 
 Q_SIGNALS:
     // Signal that balance in wallet changed
@@ -303,6 +317,8 @@ public Q_SLOTS:
     void updateWatchOnlyFlag(bool fHaveWatchonly);
     /* Current, immature or unconfirmed balance might have changed - emit 'balanceChanged' if so */
     void pollBalanceChanged();
+    /* Update stake weight when changed*/
+    void checkStakeWeightChanged();
 };
 
 #endif // BITCOIN_QT_WALLETMODEL_H

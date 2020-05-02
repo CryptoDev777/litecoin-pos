@@ -82,6 +82,15 @@ struct Params {
     int64_t DifficultyAdjustmentInterval() const { return nPowTargetTimespan / nPowTargetSpacing; }
     uint256 nMinimumChainWork;
     uint256 defaultAssumeValid;
+    /** Proof of stake parameters */
+    uint256 posLimit;
+    bool fPoSNoRetargeting;
+    int nLastPOWBlock;
+    int nFirstMPoSBlock;
+    int nMPoSRewardRecipients;
+    int nEnableHeaderSignatureHeight;
+    /** Block sync-checkpoint span*/
+    int nCheckpointSpan;
 };
 } // namespace Consensus
 

@@ -78,7 +78,7 @@ public:
         cachedWallet.clear();
         {
             for (const auto& wtx : wallet.getWalletTxs()) {
-                if (TransactionRecord::showTransaction()) {
+                if (TransactionRecord::showTransaction(wtx)) {
                     cachedWallet.append(TransactionRecord::decomposeTransaction(wtx));
                 }
             }
@@ -92,6 +92,11 @@ public:
      */
     void updateWallet(interfaces::Wallet& wallet, const uint256 &hash, int status, bool showTransaction)
     {
+        // Find transaction in wallet
+        interfaces::WalletTx wtx = wallet.getWalletTx(hash);
+        // Determine whether to show transaction or not (determine this here so that no relocking is needed in GUI thread)
+        showTransaction &= TransactionRecord::showTransaction(wtx);
+        
         qDebug() << "TransactionTablePriv::updateWallet: " + QString::fromStdString(hash.ToString()) + " " + QString::number(status);
 
         // Find bounds of this transaction in model
@@ -706,11 +711,7 @@ static std::vector< TransactionNotification > vQueueNotifications;
 
 static void NotifyTransactionChanged(TransactionTableModel *ttm, const uint256 &hash, ChangeType status)
 {
-    // Find transaction in wallet
-    // Determine whether to show transaction or not (determine this here so that no relocking is needed in GUI thread)
-    bool showTransaction = TransactionRecord::showTransaction();
-
-    TransactionNotification notification(hash, status, showTransaction);
+    TransactionNotification notification(hash, status, true);
 
     if (fQueueNotifications)
     {

@@ -53,6 +53,9 @@
 #include <util/validation.h>
 #include <validation.h>
 #include <validationinterface.h>
+#ifdef ENABLE_WALLET
+#include <wallet/wallet.h>
+#endif
 #include <walletinitinterface.h>
 
 #include <stdint.h>
@@ -102,7 +105,7 @@ static const char* FEE_ESTIMATES_FILENAME="fee_estimates.dat";
 /**
  * The PID file facilities.
  */
-static const char* BITCOIN_PID_FILENAME = "bitcoind.pid";
+static const char* BITCOIN_PID_FILENAME = "bitcoin-posd.pid";
 
 static fs::path GetPidFile()
 {
@@ -526,6 +529,8 @@ void SetupServerArgs()
     gArgs.AddArg("-blockmintxfee=<amt>", strprintf("Set lowest fee rate (in %s/kB) for transactions to be included in block creation. (default: %s)", CURRENCY_UNIT, FormatMoney(DEFAULT_BLOCK_MIN_TX_FEE)), ArgsManager::ALLOW_ANY, OptionsCategory::BLOCK_CREATION);
     gArgs.AddArg("-blockversion=<n>", "Override block version to test forking scenarios", ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::BLOCK_CREATION);
 
+    gArgs.AddArg("-aggressive-staking", "Check more often to publish immediately when valid block is found.", false, OptionsCategory::BLOCK_CREATION);
+
     gArgs.AddArg("-rest", strprintf("Accept public REST requests (default: %u)", DEFAULT_REST_ENABLE), ArgsManager::ALLOW_ANY, OptionsCategory::RPC);
     gArgs.AddArg("-rpcallowip=<ip>", "Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24). This option can be specified multiple times", ArgsManager::ALLOW_ANY, OptionsCategory::RPC);
     gArgs.AddArg("-rpcauth=<userpw>", "Username and HMAC-SHA-256 hashed password for JSON-RPC connections. The field <userpw> comes in the format: <USERNAME>:<SALT>$<HASH>. A canonical python script is included in share/rpcauth. The client then connects normally using the rpcuser=<USERNAME>/rpcpassword=<PASSWORD> pair of arguments. This option can be specified multiple times", ArgsManager::ALLOW_ANY, OptionsCategory::RPC);
@@ -539,7 +544,12 @@ void SetupServerArgs()
     gArgs.AddArg("-rpcuser=<user>", "Username for JSON-RPC connections", ArgsManager::ALLOW_ANY, OptionsCategory::RPC);
     gArgs.AddArg("-rpcworkqueue=<n>", strprintf("Set the depth of the work queue to service RPC calls (default: %d)", DEFAULT_HTTP_WORKQUEUE), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::RPC);
     gArgs.AddArg("-server", "Accept command line and JSON-RPC commands", ArgsManager::ALLOW_ANY, OptionsCategory::RPC);
-
+    gArgs.AddArg("-headerspamfilter=<n>", strprintf("Use header spam filter (default: %u)", DEFAULT_HEADER_SPAM_FILTER), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-headerspamfiltermaxsize=<n>", strprintf("Maximum size of the list of indexes in the header spam filter (default: %u)", DEFAULT_HEADER_SPAM_FILTER_MAX_SIZE), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-headerspamfiltermaxavg=<n>", strprintf("Maximum average size of an index occurrence in the header spam filter (default: %u)", DEFAULT_HEADER_SPAM_FILTER_MAX_AVG), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-headerspamfilterignoreport=<n>", strprintf("Ignore the port in the ip address when looking for header spam, determine whether or not multiple nodes can be on the same IP (default: %u)", DEFAULT_HEADER_SPAM_FILTER_IGNORE_PORT), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-cleanblockindex=<true/false>", "Clean block index (enabled by default)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-cleanblockindextimeout=<n>", "Clean block index periodically after some time (default 600 seconds)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 #if HAVE_DECL_DAEMON
     gArgs.AddArg("-daemon", "Run in the background as a daemon and accept commands", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 #else
@@ -552,10 +562,10 @@ void SetupServerArgs()
 
 std::string LicenseInfo()
 {
-    const std::string URL_SOURCE_CODE = "<https://github.com/bitcoin/bitcoin>";
-    const std::string URL_WEBSITE = "<https://bitcoincore.org>";
+    const std::string URL_SOURCE_CODE = "<https://github.com/bitcoin-pos/bitcoin-pos>";
+    const std::string URL_WEBSITE = "<https://www.bitcoinpos.net>";
 
-    return CopyrightHolders(strprintf(_("Copyright (C) %i-%i").translated, 2009, COPYRIGHT_YEAR) + " ") + "\n" +
+    return CopyrightHolders(strprintf(_("Copyright (C) %i").translated, COPYRIGHT_YEAR) + " ") + "\n" +
            "\n" +
            strprintf(_("Please contribute if you find %s useful. "
                        "Visit %s for further information about the software.").translated,
@@ -1157,7 +1167,11 @@ bool AppInitParameterInteraction()
     if (gArgs.GetArg("-rpcserialversion", DEFAULT_RPC_SERIALIZE_VERSION) > 1)
         return InitError("unknown rpcserialversion requested.");
 
-    nMaxTipAge = gArgs.GetArg("-maxtipage", DEFAULT_MAX_TIP_AGE);
+    if (gArgs.IsArgSet("-maxtipage")) {
+        nMaxTipAge = gArgs.GetArg("-maxtipage", DEFAULT_MAX_TIP_AGE);
+    } else {
+        nMaxTipAge = std::min((int64_t)(0.8 * chainparams.GetConsensus().nPowTargetSpacing * COINBASE_MATURITY), DEFAULT_MAX_TIP_AGE);
+    }
 
     return true;
 }
@@ -1322,6 +1336,10 @@ bool AppInitMain(InitInterfaces& interfaces)
 
     peerLogic.reset(new PeerLogicValidation(g_connman.get(), g_banman.get(), scheduler, gArgs.GetBoolArg("-enablebip61", DEFAULT_ENABLE_BIP61)));
     RegisterValidationInterface(peerLogic.get());
+
+#ifdef ENABLE_WALLET
+    CWallet::defaultConnman = g_connman.get();
+#endif
 
     // sanitize comments per BIP-0014, format user agent and check total size
     std::vector<std::string> uacomments;
@@ -1718,6 +1736,9 @@ bool AppInitMain(InitInterfaces& interfaces)
     }
 
     threadGroup.create_thread(std::bind(&ThreadImport, vImportFiles));
+
+    if(gArgs.GetBoolArg("-cleanblockindex", DEFAULT_CLEANBLOCKINDEX))
+        threadGroup.create_thread(std::bind(&CleanBlockIndex));
 
     // Wait for genesis block to be processed
     {

@@ -18,6 +18,12 @@
 #include <netbase.h>
 #include <txdb.h> // for -dbcache defaults
 
+#ifdef ENABLE_WALLET
+#include <wallet/wallet.h>
+#include <wallet/walletdb.h>
+#include <util/moneystr.h>
+#endif
+
 #include <QNetworkProxy>
 #include <QSettings>
 #include <QStringList>
@@ -68,7 +74,7 @@ void OptionsModel::Init(bool resetSettings)
 
     // Display
     if (!settings.contains("nDisplayUnit"))
-        settings.setValue("nDisplayUnit", BitcoinUnits::BTC);
+        settings.setValue("nDisplayUnit", BitcoinUnits::BTP);
     nDisplayUnit = settings.value("nDisplayUnit").toInt();
 
     if (!settings.contains("strThirdPartyTxUrls"))
@@ -98,6 +104,13 @@ void OptionsModel::Init(bool resetSettings)
         settings.setValue("nDatabaseCache", (qint64)nDefaultDbCache);
     if (!m_node.softSetArg("-dbcache", settings.value("nDatabaseCache").toString().toStdString()))
         addOverriddenOption("-dbcache");
+
+#ifdef ENABLE_WALLET
+    if (!settings.contains("nReserveBalance"))
+        settings.setValue("nReserveBalance", (long long)DEFAULT_RESERVE_BALANCE);
+    if (!m_node.softSetArg("-reservebalance", FormatMoney(settings.value("nReserveBalance").toLongLong())))
+        addOverriddenOption("-reservebalance");
+#endif
 
     if (!settings.contains("nThreadsScriptVerif"))
         settings.setValue("nThreadsScriptVerif", DEFAULT_SCRIPTCHECK_THREADS);
@@ -294,6 +307,8 @@ QVariant OptionsModel::data(const QModelIndex & index, int role) const
 #ifdef ENABLE_WALLET
         case SpendZeroConfChange:
             return settings.value("bSpendZeroConfChange");
+        case ReserveBalance:
+            return settings.value("nReserveBalance");
 #endif
         case DisplayUnit:
             return nDisplayUnit;
@@ -449,6 +464,14 @@ bool OptionsModel::setData(const QModelIndex & index, const QVariant & value, in
                 setRestartRequired(true);
             }
             break;
+#ifdef ENABLE_WALLET
+        case ReserveBalance:
+            if (settings.value("nReserveBalance") != value) {
+                settings.setValue("nReserveBalance", value);
+                setRestartRequired(true);
+            }
+            break;
+#endif
         case ThreadsScriptVerif:
             if (settings.value("nThreadsScriptVerif") != value) {
                 settings.setValue("nThreadsScriptVerif", value);

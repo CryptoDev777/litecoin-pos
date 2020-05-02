@@ -3,11 +3,11 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-_bitcoind() {
+_bitcoin-posd() {
     local cur prev words=() cword
     local bitcoind
 
-    # save and use original argument to invoke bitcoind for -help
+    # save and use original argument to invoke bitcoin-posd for -help
     # it might not be in $PATH
     bitcoind="$1"
 
@@ -45,7 +45,7 @@ _bitcoind() {
             ;;
     esac
 } &&
-complete -F _bitcoind bitcoind bitcoin-qt
+complete -F _bitcoin-posd bitcoin-posd bitcoin-pos-qt
 
 # Local variables:
 # mode: shell-script

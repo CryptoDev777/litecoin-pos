@@ -68,7 +68,7 @@
 // Application startup time (used for uptime calculation)
 const int64_t nStartupTime = GetTime();
 
-const char * const BITCOIN_CONF_FILENAME = "bitcoin.conf";
+const char * const BITCOIN_CONF_FILENAME = "bitcoin-pos.conf";
 
 ArgsManager gArgs;
 
@@ -694,13 +694,13 @@ void PrintExceptionContinue(const std::exception* pex, const char* pszThread)
 
 fs::path GetDefaultDataDir()
 {
-    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Bitcoin
-    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Bitcoin
-    // Mac: ~/Library/Application Support/Bitcoin
-    // Unix: ~/.bitcoin
+    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Bitcoin-pos
+    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Bitcoin-pos
+    // Mac: ~/Library/Application Support/Bitcoin-pos
+    // Unix: ~/.bitcoin-pos
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "Bitcoin";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "Bitcoin-pos";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -710,10 +710,10 @@ fs::path GetDefaultDataDir()
         pathRet = fs::path(pszHome);
 #ifdef MAC_OSX
     // Mac
-    return pathRet / "Library/Application Support/Bitcoin";
+    return pathRet / "Library/Application Support/Bitcoin-pos";
 #else
     // Unix
-    return pathRet / ".bitcoin";
+    return pathRet / ".bitcoin-pos";
 #endif
 #endif
 }
@@ -1148,6 +1148,22 @@ void runCommand(const std::string& strCommand)
         LogPrintf("runCommand error: system(%s) returned %d\n", strCommand, nErr);
 }
 #endif
+
+void RenameThread(const char* name)
+{
+#if defined(PR_SET_NAME)
+    // Only the first 15 characters are used (16 - NUL terminator)
+    ::prctl(PR_SET_NAME, name, 0, 0, 0);
+#elif (defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__))
+    pthread_set_name_np(pthread_self(), name);
+
+#elif defined(MAC_OSX)
+    pthread_setname_np(name);
+#else
+    // Prevent warnings for unused parameters...
+    (void)name;
+#endif
+}
 
 void SetupEnvironment()
 {

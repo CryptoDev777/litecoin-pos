@@ -9,6 +9,7 @@
 #include <init.h>
 #include <interfaces/chain.h>
 #include <key_io.h>
+#include <net.h>
 #include <node/transaction.h>
 #include <outputtype.h>
 #include <policy/feerate.h>
@@ -123,6 +124,9 @@ void EnsureWalletIsUnlocked(const CWallet* pwallet)
 {
     if (pwallet->IsLocked()) {
         throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
+    }
+    if (pwallet->m_wallet_unlock_staking_only) {
+        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Wallet is unlocked for staking only.");
     }
 }
 
@@ -325,6 +329,12 @@ static CTransactionRef SendMoney(interfaces::Chain::Lock& locked_chain, CWallet 
 
     if (nValue > curBalance)
         throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
+
+    if (pwallet->GetBroadcastTransactions() && !g_connman)
+        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
+
+    if (pwallet->m_wallet_unlock_staking_only)
+        throw JSONRPCError(RPC_WALLET_ERROR, "Error: Wallet unlocked for staking only, unable to create transaction.");
 
     // Parse Bitcoin address
     CScript scriptPubKey = GetScriptForDestination(address);
@@ -1334,11 +1344,11 @@ static void ListTransactions(interfaces::Chain::Lock& locked_chain, CWallet* con
                 entry.pushKV("involvesWatchonly", true);
             }
             MaybePushAddress(entry, r.destination);
-            if (wtx.IsCoinBase())
+            if (wtx.IsCoinBase() || wtx.IsCoinStake())
             {
                 if (wtx.GetDepthInMainChain(locked_chain) < 1)
                     entry.pushKV("category", "orphan");
-                else if (wtx.IsImmatureCoinBase(locked_chain))
+                else if (wtx.IsImmature(locked_chain))
                     entry.pushKV("category", "immature");
                 else
                     entry.pushKV("category", "generate");
@@ -1891,13 +1901,14 @@ static UniValue walletpassphrase(const JSONRPCRequest& request)
 
             RPCHelpMan{"walletpassphrase",
                 "\nStores the wallet decryption key in memory for 'timeout' seconds.\n"
-                "This is needed prior to performing transactions related to private keys such as sending bitcoins\n"
+                "This is needed prior to performing transactions related to private keys such as sending bitcoins and staking\n"
             "\nNote:\n"
             "Issuing the walletpassphrase command while the wallet is already unlocked will set a new unlock\n"
             "time that overrides the old one.\n",
                 {
                     {"passphrase", RPCArg::Type::STR, RPCArg::Optional::NO, "The wallet passphrase"},
                     {"timeout", RPCArg::Type::NUM, RPCArg::Optional::NO, "The time to keep the decryption key in seconds; capped at 100000000 (~3 years)."},
+                    {"staking only", RPCArg::Type::BOOL, RPCArg::Optional::OMITTED, "Unlock wallet for staking only"},
                 },
                 RPCResults{},
                 RPCExamples{
@@ -1905,6 +1916,8 @@ static UniValue walletpassphrase(const JSONRPCRequest& request)
             + HelpExampleCli("walletpassphrase", "\"my pass phrase\" 60") +
             "\nLock the wallet again (before 60 seconds)\n"
             + HelpExampleCli("walletlock", "") +
+            "\nUnlock the wallet for staking only, for a long time\n"
+            + HelpExampleCli("walletpassphrase","\"my pass phrase\" 99999999 true") +
             "\nAs a JSON-RPC call\n"
             + HelpExampleRpc("walletpassphrase", "\"my pass phrase\", 60")
                 },
@@ -1940,7 +1953,17 @@ static UniValue walletpassphrase(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "passphrase can not be empty");
     }
 
+    // Used to restore m_wallet_unlock_staking_only value in case of unlock failure
+    bool tmpStakingOnly = pwallet->m_wallet_unlock_staking_only;
+
+    // ppcoin: if user OS account compromised prevent trivial sendmoney commands
+    if (request.params.size() > 2)
+        pwallet->m_wallet_unlock_staking_only = request.params[2].get_bool();
+    else
+        pwallet->m_wallet_unlock_staking_only = false;
+
     if (!pwallet->Unlock(strWalletPass)) {
+        pwallet->m_wallet_unlock_staking_only = tmpStakingOnly;
         throw JSONRPCError(RPC_WALLET_PASSPHRASE_INCORRECT, "Error: The wallet passphrase entered was incorrect.");
     }
 
@@ -2115,6 +2138,60 @@ static UniValue encryptwallet(const JSONRPCRequest& request)
     }
 
     return "wallet encrypted; The keypool has been flushed and a new HD seed was generated (if you are using HD). You need to make a new backup.";
+}
+
+static UniValue reservebalance(const JSONRPCRequest& request)
+{
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = wallet.get();
+
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+            RPCHelpMan{"reservebalance",
+            "\nSet reserve amount not participating in network protection."
+            "\nIf no parameters provided current setting is printed.\n",
+            {
+                {"reserve", RPCArg::Type::BOOL, RPCArg::Optional::OMITTED,"is true or false to turn balance reserve on or off."},
+                {"amount", RPCArg::Type::AMOUNT, RPCArg::Optional::OMITTED, "is a real and rounded to cent."},
+            },
+             RPCResults{},
+             RPCExamples{
+            "\nSet reserve balance to 100\n"
+            + HelpExampleCli("reservebalance", "true 100") +
+            "\nSet reserve balance to 0\n"
+            + HelpExampleCli("reservebalance", "false") +
+            "\nGet reserve balance\n"
+            + HelpExampleCli("reservebalance", "")			},
+            }.Check(request);
+
+
+    if (request.params.size() > 0)
+    {
+        bool fReserve = request.params[0].get_bool();
+        if (fReserve)
+        {
+            if (request.params.size() == 1)
+                throw std::runtime_error("must provide amount to reserve balance.\n");
+            int64_t nAmount = AmountFromValue(request.params[1]);
+            nAmount = (nAmount / CENT) * CENT;  // round to cent
+            if (nAmount < 0)
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "amount cannot be negative.\n");
+            pwallet->m_reserve_balance = nAmount;
+        }
+        else
+        {
+            if (request.params.size() > 1)
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "cannot specify amount to turn off reserve.\n");
+            pwallet->m_reserve_balance = 0;
+        }
+    }
+
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("reserve", (pwallet->m_reserve_balance > 0));
+    result.pushKV("amount", ValueFromAmount(pwallet->m_reserve_balance));
+    return result;
 }
 
 static UniValue lockunspent(const JSONRPCRequest& request)
@@ -2421,6 +2498,7 @@ static UniValue getwalletinfo(const JSONRPCRequest& request)
             "  \"walletname\": xxxxx,               (string) the wallet name\n"
             "  \"walletversion\": xxxxx,            (numeric) the wallet version\n"
             "  \"balance\": xxxxxxx,                (numeric) DEPRECATED. Identical to getbalances().mine.trusted\n"
+            "  \"stake\": xxxxxxx,                  (numeric) the total stake balance of the wallet in " + CURRENCY_UNIT + "\n"
             "  \"unconfirmed_balance\": xxx,        (numeric) DEPRECATED. Identical to getbalances().mine.untrusted_pending\n"
             "  \"immature_balance\": xxxxxx,        (numeric) DEPRECATED. Identical to getbalances().mine.immature\n"
             "  \"txcount\": xxxxxxx,                (numeric) the total number of transactions in the wallet\n"
@@ -2459,6 +2537,9 @@ static UniValue getwalletinfo(const JSONRPCRequest& request)
     obj.pushKV("walletname", pwallet->GetName());
     obj.pushKV("walletversion", pwallet->GetVersion());
     obj.pushKV("balance", ValueFromAmount(bal.m_mine_trusted));
+    obj.pushKV("stake", ValueFromAmount(bal.m_mine_stake));
+    obj.pushKV("stakeable", ValueFromAmount(bal.m_mine_stakeable));
+    obj.pushKV("immature_stakeable", ValueFromAmount(bal.m_mine_immature_stakeable));
     obj.pushKV("unconfirmed_balance", ValueFromAmount(bal.m_mine_untrusted_pending));
     obj.pushKV("immature_balance", ValueFromAmount(bal.m_mine_immature));
     obj.pushKV("txcount",       (int)pwallet->mapWallet.size());
@@ -3323,7 +3404,7 @@ static UniValue bumpfee(const JSONRPCRequest& request)
             "                         the dust threshold."},
                             {"fee_rate", RPCArg::Type::NUM, /* default */ "fallback to 'confTarget'", "FeeRate (NOT total fee) to pay, in " + CURRENCY_UNIT + " per kB\n"
             "                         Specify a fee rate instead of relying on the built-in fee estimator.\n"
-            "                         Must be at least 0.0001 BTC per kB higher than the current transaction fee rate.\n"},
+            "                         Must be at least 0.0001 BTP per kB higher than the current transaction fee rate.\n"},
                             {"replaceable", RPCArg::Type::BOOL, /* default */ "true", "Whether the new transaction should still be\n"
             "                         marked bip-125 replaceable. If true, the sequence numbers in the transaction will\n"
             "                         be left unchanged from the original. If false, any input sequence numbers in the\n"
@@ -4241,9 +4322,10 @@ static const CRPCCommand commands[] =
     { "wallet",             "unloadwallet",                     &unloadwallet,                  {"wallet_name"} },
     { "wallet",             "walletcreatefundedpsbt",           &walletcreatefundedpsbt,        {"inputs","outputs","locktime","options","bip32derivs"} },
     { "wallet",             "walletlock",                       &walletlock,                    {} },
-    { "wallet",             "walletpassphrase",                 &walletpassphrase,              {"passphrase","timeout"} },
+    { "wallet",             "walletpassphrase",                 &walletpassphrase,              {"passphrase","timeout", "stakingonly"} },
     { "wallet",             "walletpassphrasechange",           &walletpassphrasechange,        {"oldpassphrase","newpassphrase"} },
     { "wallet",             "walletprocesspsbt",                &walletprocesspsbt,             {"psbt","sign","sighashtype","bip32derivs"} },
+    { "wallet",             "reservebalance",                   &reservebalance,                {"reserve", "amount"} },
 };
 // clang-format on
 

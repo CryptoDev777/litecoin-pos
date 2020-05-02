@@ -387,6 +387,19 @@ bool SignSignature(const SigningProvider &provider, const CTransaction& txFrom, 
     return SignSignature(provider, txout.scriptPubKey, txTo, nIn, txout.nValue, nHashType);
 }
 
+bool VerifySignature(const Coin& coin, const uint256 txFromHash, const CTransaction& txTo, unsigned int nIn, unsigned int flags)
+{
+    TransactionSignatureChecker checker(&txTo, nIn, 0);
+	
+    const CTxIn& txin = txTo.vin[nIn];
+    const CTxOut& txout = coin.out;
+
+    if (txin.prevout.hash != txFromHash)
+        return false;
+		
+    return VerifyScript(txin.scriptSig, txout.scriptPubKey, NULL, flags, checker);
+}
+
 namespace {
 /** Dummy signature checker which accepts all signatures. */
 class DummySignatureChecker final : public BaseSignatureChecker

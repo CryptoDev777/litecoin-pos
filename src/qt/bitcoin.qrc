@@ -35,6 +35,7 @@
         <file alias="tx_inout">res/icons/tx_inout.png</file>
         <file alias="lock_closed">res/icons/lock_closed.png</file>
         <file alias="lock_open">res/icons/lock_open.png</file>
+        <file alias="lock_staking">res/icons/lock_staking.png</file>
         <file alias="warning">res/icons/warning.png</file>
         <file alias="fontbigger">res/icons/fontbigger.png</file>
         <file alias="fontsmaller">res/icons/fontsmaller.png</file>
@@ -44,6 +45,8 @@
         <file alias="hd_disabled">res/icons/hd_disabled.png</file>
         <file alias="network_disabled">res/icons/network_disabled.png</file>
         <file alias="proxy">res/icons/proxy.png</file>
+        <file alias="staking_on">res/icons/staking_on.png</file>
+        <file alias="staking_off">res/icons/staking_off.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="spinner-000">res/movies/spinner-000.png</file>

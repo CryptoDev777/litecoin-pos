@@ -169,6 +169,8 @@ UniValue importprivkey(const JSONRPCRequest& request)
 
         CKey key = DecodeSecret(strSecret);
         if (!key.IsValid()) throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid private key encoding");
+        if (pwallet->m_wallet_unlock_staking_only)
+            throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Wallet is unlocked for staking only.");
 
         CPubKey pubkey = key.GetPubKey();
         assert(key.VerifyPubKey(pubkey));
@@ -716,6 +718,8 @@ UniValue dumpprivkey(const JSONRPCRequest& request)
     CTxDestination dest = DecodeDestination(strAddress);
     if (!IsValidDestination(dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Bitcoin address");
+        if (pwallet->m_wallet_unlock_staking_only)
+            throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Wallet is unlocked for staking only.");
     }
     auto keyid = GetKeyForDestination(*pwallet, dest);
     if (keyid.IsNull()) {

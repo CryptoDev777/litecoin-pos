@@ -60,6 +60,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "listtransactions", 2, "skip" },
     { "listtransactions", 3, "include_watchonly" },
     { "walletpassphrase", 1, "timeout" },
+    { "walletpassphrase", 2, "stakingonly" },
     { "getblocktemplate", 0, "template_request" },
     { "listsinceblock", 1, "target_confirmations" },
     { "listsinceblock", 2, "include_watchonly" },
@@ -152,6 +153,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "logging", 0, "include" },
     { "logging", 1, "exclude" },
     { "disconnectnode", 1, "nodeid" },
+    { "reservebalance", 0, "reserve"},
+    { "reservebalance", 1, "amount"},
     // Echo with conversion (For testing only)
     { "echojson", 0, "arg0" },
     { "echojson", 1, "arg1" },

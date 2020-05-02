@@ -8,8 +8,10 @@
 
 #include <net.h>
 #include <validationinterface.h>
+#include <consensus/consensus.h>
 #include <consensus/params.h>
 #include <sync.h>
+#include <chainparams.h>
 
 extern CCriticalSection cs_main;
 
@@ -20,6 +22,21 @@ static const unsigned int DEFAULT_BLOCK_RECONSTRUCTION_EXTRA_TXN = 100;
 /** Default for BIP61 (sending reject messages) */
 static constexpr bool DEFAULT_ENABLE_BIP61{false};
 static const bool DEFAULT_PEERBLOOMFILTERS = false;
+/** Default maximum orphan blocks */
+static const unsigned int DEFAULT_MAX_ORPHAN_BLOCKS = 40;
+/** Default for -headerspamfilter, use header spam filter */
+static const bool DEFAULT_HEADER_SPAM_FILTER = true;
+/** Default for -headerspamfiltermaxsize, maximum size of the list of indexes in the header spam filter */
+static const unsigned int DEFAULT_HEADER_SPAM_FILTER_MAX_SIZE = COINBASE_MATURITY;
+/** Default for -headerspamfiltermaxavg, maximum average size of an index occurrence in the header spam filter */
+static const unsigned int DEFAULT_HEADER_SPAM_FILTER_MAX_AVG = 10;
+/** Default for -headerspamfilterignoreport, ignore the port in the ip address when looking for header spam,
+ multiple nodes on the same ip will be treated as the one when computing the filter*/
+static const unsigned int DEFAULT_HEADER_SPAM_FILTER_IGNORE_PORT = true;
+/** Default for -cleanblockindex. */
+static const bool DEFAULT_CLEANBLOCKINDEX = true;
+/** Default for -cleanblockindextimeout. */
+static const unsigned int DEFAULT_CLEANBLOCKINDEXTIMEOUT = 600;
 
 class PeerLogicValidation final : public CValidationInterface, public NetEventsInterface {
 private:
@@ -90,7 +107,13 @@ struct CNodeStateStats {
 /** Get statistics from node state */
 bool GetNodeStateStats(NodeId nodeid, CNodeStateStats &stats);
 
+/** Process network block received from a given node */
+bool ProcessNetBlock(const CChainParams& chainparams, const std::shared_ptr<const CBlock> pblock, bool fForceProcessing, bool* fNewBlock, CNode* pfrom, CConnman& connman);
+
 /** Relay transaction to every node */
 void RelayTransaction(const uint256&, const CConnman& connman);
+
+/** Clean block index */
+void CleanBlockIndex();
 
 #endif // BITCOIN_NET_PROCESSING_H

@@ -15,10 +15,13 @@
 
 /* Return positive answer if transaction should be shown in list.
  */
-bool TransactionRecord::showTransaction()
+bool TransactionRecord::showTransaction(const interfaces::WalletTx& wtx)
 {
-    // There are currently no cases where we hide transactions, but
-    // we may want to use this in the future for things like RBF.
+    // Ensures we show generated coins / mined transactions at depth 1
+    if((wtx.is_coinbase || wtx.is_coinstake) && !wtx.is_in_main_chain)
+    {
+        return false;
+    }
     return true;
 }
 
@@ -35,7 +38,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const interface
     uint256 hash = wtx.tx->GetHash();
     std::map<std::string, std::string> mapValue = wtx.value_map;
 
-    if (nNet > 0 || wtx.is_coinbase)
+    if (nNet > 0 || wtx.is_coinbase || wtx.is_coinstake)
     {
         //
         // Credit
@@ -48,8 +51,16 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const interface
             {
                 TransactionRecord sub(hash, nTime);
                 CTxDestination address;
-                sub.idx = i; // vout index
-                sub.credit = txout.nValue;
+                if(wtx.is_coinstake) // Combine into single output for coinstake
+                {
+                    sub.idx = 1; // vout index
+                    sub.credit = nNet;
+                }
+                else
+                {
+                    sub.idx = i; // vout index
+                    sub.credit = txout.nValue;
+                }
                 sub.involvesWatchAddress = mine & ISMINE_WATCH_ONLY;
                 if (wtx.txout_address_is_mine[i])
                 {
@@ -63,13 +74,16 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const interface
                     sub.type = TransactionRecord::RecvFromOther;
                     sub.address = mapValue["from"];
                 }
-                if (wtx.is_coinbase)
+                if (wtx.is_coinbase || wtx.is_coinstake)
                 {
                     // Generated
                     sub.type = TransactionRecord::Generated;
                 }
 
                 parts.append(sub);
+
+                if(wtx.is_coinstake)
+                    break; // Single output for coinstake
             }
         }
     }
@@ -165,7 +179,7 @@ void TransactionRecord::updateStatus(const interfaces::WalletTxStatus& wtx, int 
     // Sort order, unrecorded transactions sort to the top
     status.sortKey = strprintf("%010d-%01d-%010u-%03d",
         wtx.block_height,
-        wtx.is_coinbase ? 1 : 0,
+        (wtx.is_coinbase || wtx.is_coinstake) ? 1 : 0,
         wtx.time_received,
         idx);
     status.countsForBalance = wtx.is_trusted && !(wtx.blocks_to_maturity > 0);

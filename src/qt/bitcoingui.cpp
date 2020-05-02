@@ -18,12 +18,14 @@
 #include <qt/platformstyle.h>
 #include <qt/rpcconsole.h>
 #include <qt/utilitydialog.h>
+#include <rpc/server.h>
 
 #ifdef ENABLE_WALLET
 #include <qt/walletcontroller.h>
 #include <qt/walletframe.h>
 #include <qt/walletmodel.h>
 #include <qt/walletview.h>
+#include <rpc/server.h>
 #endif // ENABLE_WALLET
 
 #ifdef Q_OS_MAC
@@ -148,6 +150,7 @@ BitcoinGUI::BitcoinGUI(interfaces::Node& node, const PlatformStyle *_platformSty
     labelProxyIcon = new GUIUtil::ClickableLabel();
     connectionsControl = new GUIUtil::ClickableLabel();
     labelBlocksIcon = new GUIUtil::ClickableLabel();
+    labelStakingIcon = new QLabel();
     if(enableWallet)
     {
         frameBlocksLayout->addStretch();
@@ -158,10 +161,23 @@ BitcoinGUI::BitcoinGUI(interfaces::Node& node, const PlatformStyle *_platformSty
     }
     frameBlocksLayout->addWidget(labelProxyIcon);
     frameBlocksLayout->addStretch();
+    frameBlocksLayout->addWidget(labelStakingIcon);
+    frameBlocksLayout->addStretch();
     frameBlocksLayout->addWidget(connectionsControl);
     frameBlocksLayout->addStretch();
     frameBlocksLayout->addWidget(labelBlocksIcon);
     frameBlocksLayout->addStretch();
+
+#ifdef ENABLE_WALLET
+    if (gArgs.GetBoolArg("-staking", true))
+    {
+        QTimer *timerStakingIcon = new QTimer(labelStakingIcon);
+        connect(timerStakingIcon, SIGNAL(timeout()), this, SLOT(updateStakingIcon()));
+        timerStakingIcon->start(1000);
+
+        updateStakingIcon();
+    }
+#endif // ENABLE_WALLET
 
     // Progress bar and label for blocks download
     progressBarLabel = new QLabel();
@@ -264,11 +280,18 @@ void BitcoinGUI::createActions()
     receiveCoinsMenuAction->setStatusTip(receiveCoinsAction->statusTip());
     receiveCoinsMenuAction->setToolTip(receiveCoinsMenuAction->statusTip());
 
+    stakeAction = new QAction(platformStyle->SingleColorIcon(":/icons/tx_mined"), tr("&Stake"), this);
+    stakeAction->setStatusTip(tr("Show stake of wallet"));
+    stakeAction->setToolTip(stakeAction->statusTip());
+    stakeAction->setCheckable(true);
+    stakeAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_4));
+    tabGroup->addAction(stakeAction);
+
     historyAction = new QAction(platformStyle->SingleColorIcon(":/icons/history"), tr("&Transactions"), this);
     historyAction->setStatusTip(tr("Browse transaction history"));
     historyAction->setToolTip(historyAction->statusTip());
     historyAction->setCheckable(true);
-    historyAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_4));
+    historyAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
     tabGroup->addAction(historyAction);
 
 #ifdef ENABLE_WALLET
@@ -284,6 +307,8 @@ void BitcoinGUI::createActions()
     connect(receiveCoinsAction, &QAction::triggered, this, &BitcoinGUI::gotoReceiveCoinsPage);
     connect(receiveCoinsMenuAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
     connect(receiveCoinsMenuAction, &QAction::triggered, this, &BitcoinGUI::gotoReceiveCoinsPage);
+    connect(stakeAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
+    connect(stakeAction, &QAction::triggered, this, &BitcoinGUI::gotoStakePage);
     connect(historyAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
     connect(historyAction, &QAction::triggered, this, &BitcoinGUI::gotoHistoryPage);
 #endif // ENABLE_WALLET
@@ -518,6 +543,7 @@ void BitcoinGUI::createToolBars()
         toolbar->addAction(overviewAction);
         toolbar->addAction(sendCoinsAction);
         toolbar->addAction(receiveCoinsAction);
+        toolbar->addAction(stakeAction);
         toolbar->addAction(historyAction);
         overviewAction->setChecked(true);
 
@@ -702,6 +728,7 @@ void BitcoinGUI::setWalletActionsEnabled(bool enabled)
     usedSendingAddressesAction->setEnabled(enabled);
     usedReceivingAddressesAction->setEnabled(enabled);
     openAction->setEnabled(enabled);
+    stakeAction->setEnabled(enabled);
     m_close_wallet_action->setEnabled(enabled);
 }
 
@@ -836,6 +863,12 @@ void BitcoinGUI::gotoSendCoinsPage(QString addr)
 {
     sendCoinsAction->setChecked(true);
     if (walletFrame) walletFrame->gotoSendCoinsPage(addr);
+}
+
+void BitcoinGUI::gotoStakePage()
+{
+    stakeAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoStakePage();
 }
 
 void BitcoinGUI::gotoSignMessageTab(QString addr)
@@ -1211,8 +1244,9 @@ void BitcoinGUI::setHDStatus(bool privkeyDisabled, int hdEnabled)
     labelWalletHDStatusIcon->setEnabled(hdEnabled);
 }
 
-void BitcoinGUI::setEncryptionStatus(int status)
+void BitcoinGUI::setEncryptionStatus(WalletModel *walletModel)
 {
+    int status = walletModel->getEncryptionStatus();
     switch(status)
     {
     case WalletModel::Unencrypted:
@@ -1223,8 +1257,16 @@ void BitcoinGUI::setEncryptionStatus(int status)
         break;
     case WalletModel::Unlocked:
         labelWalletEncryptionIcon->show();
-        labelWalletEncryptionIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/lock_open").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
-        labelWalletEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>unlocked</b>"));
+        if(walletModel->getWalletUnlockStakingOnly())
+        {
+            labelWalletEncryptionIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/lock_staking").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+            labelWalletEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>unlocked for staking only</b>"));
+        }
+        else
+        {
+            labelWalletEncryptionIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/lock_open").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+            labelWalletEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>unlocked</b>"));
+        }
         encryptWalletAction->setChecked(true);
         changePassphraseAction->setEnabled(true);
         encryptWalletAction->setEnabled(false); // TODO: decrypt currently not supported
@@ -1250,7 +1292,7 @@ void BitcoinGUI::updateWalletStatus()
         return;
     }
     WalletModel * const walletModel = walletView->getWalletModel();
-    setEncryptionStatus(walletModel->getEncryptionStatus());
+    setEncryptionStatus(walletModel);
     setHDStatus(walletModel->privateKeysDisabled(), walletModel->wallet().hdEnabled());
 }
 #endif // ENABLE_WALLET
@@ -1289,6 +1331,73 @@ void BitcoinGUI::updateWindowTitle()
     }
     setWindowTitle(window_title);
 }
+
+#ifdef ENABLE_WALLET
+void BitcoinGUI::updateStakingIcon()
+{
+    if(m_node.shutdownRequested())
+        return;
+
+    WalletView * const walletView = walletFrame ? walletFrame->currentWalletView() : 0;
+    if (!walletView) {
+        // Not staking because wallet is closed
+        labelStakingIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/staking_off").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
+        labelStakingIcon->setToolTip(tr("Not staking"));
+        return;
+    }
+    WalletModel * const walletModel = walletView->getWalletModel();
+
+    uint64_t nWeight= walletModel->getStakeWeight();
+    if (walletModel->wallet().getLastCoinStakeSearchInterval() &&
+            walletModel->wallet().getEnabledStaking() && nWeight)
+    {
+        uint64_t nNetworkWeight = GetPoSKernelPS();
+        const Consensus::Params& consensusParams = Params().GetConsensus();
+        int64_t nTargetSpacing = consensusParams.nPowTargetSpacing;
+
+        unsigned nEstimateTime = nTargetSpacing * nNetworkWeight / nWeight;
+
+        QString text;
+        if (nEstimateTime < 60)
+        {
+            text = tr("%n second(s)", "", nEstimateTime);
+        }
+        else if (nEstimateTime < 60*60)
+        {
+            text = tr("%n minute(s)", "", nEstimateTime/60);
+        }
+        else if (nEstimateTime < 24*60*60)
+        {
+            text = tr("%n hour(s)", "", nEstimateTime/(60*60));
+        }
+        else
+        {
+            text = tr("%n day(s)", "", nEstimateTime/(60*60*24));
+        }
+
+        nWeight /= COIN;
+        nNetworkWeight /= COIN;
+
+        labelStakingIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/staking_on").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
+        labelStakingIcon->setToolTip(tr("Staking.<br>Your weight is %1<br>Network weight is %2<br>Expected time to earn reward is %3").arg(nWeight).arg(nNetworkWeight).arg(text));
+    }
+    else
+    {
+        labelStakingIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/staking_off").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
+
+        if (m_node.getNodeCount(CConnman::CONNECTIONS_ALL) == 0)
+            labelStakingIcon->setToolTip(tr("Not staking because wallet is offline"));
+        else if (m_node.isInitialBlockDownload())
+            labelStakingIcon->setToolTip(tr("Not staking because wallet is syncing"));
+        else if (!nWeight)
+            labelStakingIcon->setToolTip(tr("Not staking because you don't have mature coins"));
+        else if (walletModel->wallet().isLocked())
+            labelStakingIcon->setToolTip(tr("Not staking because wallet is locked"));
+        else
+            labelStakingIcon->setToolTip(tr("Not staking"));
+    }
+}
+#endif // ENABLE_WALLET
 
 void BitcoinGUI::showNormalIfMinimized(bool fToggleHidden)
 {

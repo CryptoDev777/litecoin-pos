@@ -18,6 +18,8 @@ class CScript;
 class CTransaction;
 class uint256;
 
+typedef std::vector<unsigned char> valtype;
+
 /** Signature hash types/flags */
 enum
 {
@@ -191,5 +193,9 @@ bool VerifyScript(const CScript& scriptSig, const CScript& scriptPubKey, const C
 size_t CountWitnessSigOps(const CScript& scriptSig, const CScript& scriptPubKey, const CScriptWitness* witness, unsigned int flags);
 
 int FindAndDelete(CScript& script, const CScript& b);
+
+bool IsLowDERSignature(const valtype &vchSig, ScriptError* serror = NULL, bool haveHashType = true);
+bool IsDERSignature(const valtype &vchSig, ScriptError* serror = NULL, bool haveHashType = true);
+bool IsCompressedOrUncompressedPubKey(const valtype &vchPubKey);
 
 #endif // BITCOIN_SCRIPT_INTERPRETER_H

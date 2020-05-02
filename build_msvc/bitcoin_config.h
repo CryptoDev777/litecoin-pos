@@ -23,13 +23,13 @@
 #define COPYRIGHT_HOLDERS "The %s developers"
 
 /* Copyright holder(s) */
-#define COPYRIGHT_HOLDERS_FINAL "The Bitcoin Core developers"
+#define COPYRIGHT_HOLDERS_FINAL "The Bitcoin PoS Core developers"
 
 /* Replacement for %s in copyright holders string */
-#define COPYRIGHT_HOLDERS_SUBSTITUTION "Bitcoin Core"
+#define COPYRIGHT_HOLDERS_SUBSTITUTION "Bitcoin PoS Core"
 
 /* Copyright year */
-#define COPYRIGHT_YEAR 2019
+#define COPYRIGHT_YEAR 2020
 
 /* Define to 1 to enable wallet functions */
 #define ENABLE_WALLET 1
@@ -343,16 +343,16 @@
 #define PACKAGE_BUGREPORT "https://github.com/bitcoin/bitcoin/issues"
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "Bitcoin Core"
+#define PACKAGE_NAME "Bitcoin PoS Core"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Bitcoin Core 0.18.99"
+#define PACKAGE_STRING "Bitcoin PoS Core 0.18.99"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "bitcoin"
+#define PACKAGE_TARNAME "bitcoin-pos"
 
 /* Define to the home page for this package. */
-#define PACKAGE_URL "https://bitcoincore.org/"
+#define PACKAGE_URL "https://bitcoinpos.net/"
 
 /* Define to the version of this package. */
 #define PACKAGE_VERSION "0.18.99"

@@ -19,6 +19,7 @@ class SendCoinsRecipient;
 class TransactionView;
 class WalletModel;
 class AddressBookPage;
+class StakePage;
 
 QT_BEGIN_NAMESPACE
 class QModelIndex;
@@ -65,6 +66,7 @@ private:
     SendCoinsDialog *sendCoinsPage;
     AddressBookPage *usedSendingAddressesPage;
     AddressBookPage *usedReceivingAddressesPage;
+    StakePage *stakePage;
 
     TransactionView *transactionView;
 
@@ -80,6 +82,8 @@ public Q_SLOTS:
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
+    /** Switch to stake page */
+    void gotoStakePage();
 
     /** Show Sign/Verify Message dialog and switch to sign message tab */
     void gotoSignMessageTab(QString addr = "");
@@ -98,7 +102,9 @@ public Q_SLOTS:
     /** Change encrypted wallet passphrase */
     void changePassphrase();
     /** Ask for passphrase to unlock wallet temporarily */
-    void unlockWallet();
+    void unlockWallet(bool fromMenu = false);
+    /** Lock the wallet */
+    void lockWallet();
 
     /** Show used sending addresses */
     void usedSendingAddresses();

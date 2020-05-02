@@ -145,6 +145,9 @@ public:
     //! pointer to the index of the predecessor of this block
     CBlockIndex* pprev;
 
+    //! pointer to the index of the successor of this block
+    CBlockIndex* pnext;
+
     //! pointer to the index of some further predecessor of this block
     CBlockIndex* pskip;
 
@@ -182,6 +185,14 @@ public:
     uint32_t nBits;
     uint32_t nNonce;
 
+    // Proof of stake
+    COutPoint prevoutStake;
+    // block signature - proof-of-stake protect the block by signing the block using a stake holder private key
+    std::vector<unsigned char> vchBlockSig;
+    uint256 nStakeModifier;
+    uint256 hashProof;
+    uint64_t nMoneySupply;
+
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     int32_t nSequenceId;
 
@@ -192,6 +203,7 @@ public:
     {
         phashBlock = nullptr;
         pprev = nullptr;
+        pnext = nullptr;
         pskip = nullptr;
         nHeight = 0;
         nFile = 0;
@@ -209,6 +221,11 @@ public:
         nTime          = 0;
         nBits          = 0;
         nNonce         = 0;
+        prevoutStake.SetNull();
+        vchBlockSig.clear();
+        nStakeModifier = uint256();
+        hashProof = uint256();
+        nMoneySupply = 0;
     }
 
     CBlockIndex()
@@ -225,6 +242,11 @@ public:
         nTime          = block.nTime;
         nBits          = block.nBits;
         nNonce         = block.nNonce;
+        prevoutStake   = block.prevoutStake;
+        vchBlockSig    = block.vchBlockSig;
+        nStakeModifier = uint256();
+        hashProof = uint256(); 
+        nMoneySupply   = 0;
     }
 
     FlatFilePos GetBlockPos() const {
@@ -255,6 +277,8 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
+        block.vchBlockSig    = vchBlockSig;
+        block.prevoutStake   = prevoutStake;
         return block;
     }
 
@@ -296,6 +320,16 @@ public:
 
         std::sort(pbegin, pend);
         return pbegin[(pend - pbegin)/2];
+    }
+
+    bool IsProofOfWork() const
+    {
+        return !IsProofOfStake();
+    }
+
+    bool IsProofOfStake() const
+    {
+        return !prevoutStake.IsNull();
     }
 
     std::string ToString() const
@@ -383,6 +417,11 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
+        READWRITE(prevoutStake);
+        READWRITE(vchBlockSig);
+        READWRITE(nStakeModifier);
+        READWRITE(hashProof);
+        READWRITE(VARINT(nMoneySupply));
     }
 
     uint256 GetBlockHash() const
@@ -394,6 +433,8 @@ public:
         block.nTime           = nTime;
         block.nBits           = nBits;
         block.nNonce          = nNonce;
+        block.prevoutStake    = prevoutStake;
+        block.vchBlockSig     = vchBlockSig;
         return block.GetHash();
     }
 
