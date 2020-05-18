@@ -317,6 +317,69 @@ static UniValue getstakinginfo(const JSONRPCRequest& request)
     return obj;
 }
 
+static UniValue getstakingstatus(const JSONRPCRequest& request)
+{
+            RPCHelpMan{"getstakingstatus",
+                "\nReturns an object containing staking status information.",
+                {},
+                RPCResult{
+                           "{\n"
+                           "  \"enabled\": xxx,                 (bool) 'true' if staking is enabled\n"
+                           "  \"staking\": xxx,                 (bool) 'true' if wallet is currently staking\n"
+                           "  \"walletstakingenabled\": xxx,    (bool) 'true' if wallet is has staking enabled\n"
+                           "  \"stakesearchinterval\": nnn,     (numeric) last coin stake interval\n"
+                           "  \"walletunlocked\": xxx,          (bool) 'true' if wallet is unlocked\n"
+                           "  \"nodeconnections\": xxx,         (bool) 'true' if wallet is online (has connections)\n"
+                           "  \"nodesynced\": xxx,              (bool) 'true' if wallet is synced\n"
+                           "  \"stakeablecoins\": xxx,          (bool) 'true' if there are stakeable coins\n"
+                           "  \"errors\": nnn,                  (string) \n"
+                           "}\n"
+                       },
+                RPCExamples{
+                    HelpExampleCli("getstakingstatus", "")
+            + HelpExampleRpc("getstakingstatus", "")
+                },
+            }.Check(request);
+
+    LOCK(cs_main);
+
+    uint64_t nWeight = 0;
+    uint64_t lastCoinStakeSearchInterval = 0;
+    bool isUnlocked = false;
+    bool walletStakingEnabled = false;
+#ifdef ENABLE_WALLET
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = wallet.get();
+
+    if (pwallet)
+    {
+        auto locked_chain = pwallet->chain().lock();
+        nWeight = pwallet->GetStakeWeight(*locked_chain);
+        lastCoinStakeSearchInterval = pwallet->m_last_coin_stake_search_interval;
+        isUnlocked = !pwallet->IsLocked();
+        walletStakingEnabled = pwallet->m_enabled_staking;
+    }
+#endif
+
+    bool staking = walletStakingEnabled && lastCoinStakeSearchInterval && nWeight;
+    bool hasConnections = g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL) != 0;
+    bool isSynced = ::ChainstateActive().IsInitialBlockDownload() == false;
+    bool hasCoins = nWeight != 0;
+
+    UniValue obj(UniValue::VOBJ);
+
+    obj.pushKV("enabled", gArgs.GetBoolArg("-staking", true));
+    obj.pushKV("staking", staking);
+    obj.pushKV("walletstakingenabled", walletStakingEnabled);
+    obj.pushKV("stakesearchinterval", lastCoinStakeSearchInterval);
+    obj.pushKV("walletunlocked", isUnlocked);
+    obj.pushKV("nodeconnections", hasConnections);
+    obj.pushKV("nodesynced", isSynced);
+    obj.pushKV("stakeablecoins", hasCoins);
+    obj.pushKV("errors", GetWarnings("statusbar"));
+
+    return obj;
+}
 
 // NOTE: Unlike wallet RPC (which use BTP values), mining RPCs follow GBT (BIP 22) in using satoshi amounts
 static UniValue prioritisetransaction(const JSONRPCRequest& request)
@@ -1064,6 +1127,7 @@ static const CRPCCommand commands[] =
     { "mining",             "submitheader",           &submitheader,           {"hexdata"} },
 
     { "mining",             "getstakinginfo",         &getstakinginfo,         {} },
+    { "mining",             "getstakingstatus",       &getstakingstatus,       {} },
 
     { "generating",         "generatetoaddress",      &generatetoaddress,      {"nblocks","address","maxtries"} },
 
