@@ -1,25 +1,32 @@
-Bitcoin Pos Core integration/staging tree
+Bitcoin PoS Core integration/staging tree
 =====================================
 
 https://bitcoinpos.net
 
-What is Bitcoin Pos?
+What is Bitcoin PoS?
 ----------------
 
-Bitcoin Pos is an experimental digital currency that enables instant payments to
-anyone, anywhere in the world. Bitcoin Pos uses peer-to-peer technology to operate
+Bitcoin PoS is an experimental digital currency that enables instant payments to
+anyone, anywhere in the world. Bitcoin PoS uses peer-to-peer technology to operate
 with no central authority: managing transactions and issuing money are carried
-out collectively by the network. Bitcoin Pos Core is the name of open source
+out collectively by the network. Bitcoin PoS Core is the name of open source
 software which enables the use of this currency.
 
+Bitcoin PoS Core is built on top of Bitcoin Core. The difference between the two
+is the consensus algorithm: Bitcoin PoS Core uses Proof of Stake consensus, whilst
+Bitcoin Core uses Proof of Work. Using Proof of Stake as a consensus algorithm is
+allowing it not only to scale better and be orders of magnitude more efficient in
+terms of power consumption, but it is also lowering the entry barrier for contributing
+to the creation of new blocks.
+
 For more information, as well as an immediately useable, binary version of
-the Bitcoin Pos Core software, see https://bitcoinpos.net/download/, or read the
-[original whitepaper](https://bitcoinpos.net/bitcoinpos.pdf).
+the Bitcoin PoS Core software, see https://www.bitcoinpos.net/#wallet-btp, or read the
+[original whitepaper](https://www.bitcoinpos.net/WhitePaperBTP.pdf).
 
 License
 -------
 
-Bitcoin Pos Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
+Bitcoin PoS Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
 information or see https://opensource.org/licenses/MIT.
 
 Development Process
@@ -27,7 +34,7 @@ Development Process
 
 The `master` branch is regularly built and tested, but is not guaranteed to be
 completely stable. [Tags](https://github.com/bitcoin-pos/bitcoin-pos/tags) are created
-regularly to indicate new official, stable release versions of Bitcoin Pos Core.
+regularly to indicate new official, stable release versions of Bitcoin PoS Core.
 
 The contribution workflow is described in [CONTRIBUTING.md](CONTRIBUTING.md)
 and useful hints for developers can be found in [doc/developer-notes.md](doc/developer-notes.md).
@@ -59,17 +66,3 @@ Changes should be tested by somebody other than the developer who wrote the
 code. This is especially important for large or high-risk changes. It is useful
 to add a test plan to the pull request description if testing the changes is
 not straightforward.
-
-Translations
-------------
-
-Changes to translations as well as new translations can be submitted to
-[Bitcoin Pos Core's Transifex page](https://www.transifex.com/bitcoin/bitcoin/).
-
-Translations are periodically pulled from Transifex and merged into the git repository. See the
-[translation process](doc/translation_process.md) for details on how this works.
-
-**Important**: We do not accept translation changes as GitHub pull requests because the next
-pull from Transifex would automatically overwrite them again.
-
-Translators should also subscribe to the [mailing list](https://groups.google.com/forum/#!forum/bitcoin-translators).
