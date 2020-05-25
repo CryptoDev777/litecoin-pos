@@ -2103,6 +2103,19 @@ bool CheckReward(const CBlock& block, CValidationState& state, int nHeight, cons
         std::vector<CScript> mposScriptList;
         if (!GetMPoSOutputScripts(mposScriptList, nPrevHeight, consensusParams))
             return error("CheckReward(): cannot create the list of MPoS output scripts");
+
+        std::vector<CTxOut> vTempVouts = block.vtx[offset]->vout;
+        CAmount splitReward = blockReward / rewardRecipients;
+        for(size_t i = 0; i < mposScriptList.size(); i++){
+            std::vector<CTxOut>::iterator it=std::find(vTempVouts.begin(), vTempVouts.end(), CTxOut(splitReward,mposScriptList[i]));
+            if(it==vTempVouts.end()){
+                return state.Invalid(ValidationInvalidReason::CONSENSUS, error("CheckReward(): A MPoS participant was not properly paid"), REJECT_INVALID, "bad-cs-mpos-missing");
+            }else{
+                vTempVouts.erase(it);
+            }
+        }
+
+        vTempVouts.clear();
     }
 
     return true;
@@ -3851,7 +3864,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
 
     // Check that the block satisfies synchronized checkpoint
     if (!Checkpoints::CheckSync(nHeight))
-        return state.Invalid(ValidationInvalidReason::BLOCK_CHECKPOINT, error("%s: forked chain older than synchronized checkpoint (height %d)", __func__, nHeight), REJECT_CHECKPOINT, "bad-fork-prior-to-synch-checkpoint");
+        return state.Invalid(ValidationInvalidReason::BLOCK_HEADER_SYNC, error("%s: forked chain older than synchronized checkpoint (height %d)", __func__, nHeight), REJECT_CHECKPOINT, "bad-fork-prior-to-synch-checkpoint");
 
     // Check timestamp against prev
     if (pindexPrev && block.IsProofOfStake() && block.GetBlockTime() <= pindexPrev->GetMedianTimePast())

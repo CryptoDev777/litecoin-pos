@@ -227,6 +227,7 @@ static UniValue getmininginfo(const JSONRPCRequest& request)
     if (pwallet)
     {
         auto locked_chain = pwallet->chain().lock();
+        LOCK(pwallet->cs_wallet);
         nWeight = pwallet->GetStakeWeight(*locked_chain);
         lastCoinStakeSearchInterval = pwallet->m_last_coin_stake_search_interval;
     }
@@ -286,6 +287,7 @@ static UniValue getstakinginfo(const JSONRPCRequest& request)
     if (pwallet)
     {
         auto locked_chain = pwallet->chain().lock();
+        LOCK(pwallet->cs_wallet);
         nWeight = pwallet->GetStakeWeight(*locked_chain);
         lastCoinStakeSearchInterval = pwallet->m_enabled_staking ? pwallet->m_last_coin_stake_search_interval : 0;
     }
@@ -354,6 +356,7 @@ static UniValue getstakingstatus(const JSONRPCRequest& request)
     if (pwallet)
     {
         auto locked_chain = pwallet->chain().lock();
+        LOCK(pwallet->cs_wallet);
         nWeight = pwallet->GetStakeWeight(*locked_chain);
         lastCoinStakeSearchInterval = pwallet->m_last_coin_stake_search_interval;
         isUnlocked = !pwallet->IsLocked();

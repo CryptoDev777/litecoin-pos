@@ -582,6 +582,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
         std::set<std::pair<const CWalletTx*,unsigned int> > setCoins;
         {
             auto locked_chain = pwallet->chain().lock();
+            LOCK(pwallet->cs_wallet);
             pwallet->SelectCoinsForStaking(*locked_chain, nTargetValue, setCoins, nValueIn);
         }
         if(setCoins.size() > 0)
