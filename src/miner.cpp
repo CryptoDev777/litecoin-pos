@@ -557,8 +557,8 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
             MilliSleep(Params().GetConsensus().nPowTargetSpacing * 1000); // sleep one block
             continue;
         }
-        //don't disable PoS mining for no connections if in regtest mode
-        if(!regtestMode && !gArgs.GetBoolArg("-emergencystaking", false)) {
+        // Don't disable PoS mining for no connections if in regtest mode
+        if (!regtestMode && !gArgs.GetBoolArg("-emergencystaking", false)) {
             while (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) == 0 || ::ChainstateActive().IsInitialBlockDownload()) {
                 pwallet->m_last_coin_stake_search_interval = 0;
                 fTryToSync = true;
@@ -567,8 +567,8 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
             if (fTryToSync) {
                 fTryToSync = false;
                 if (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) < 3 ||
-                	::ChainActive().Tip()->GetBlockTime() < GetTime() - 10 * 60) {
-                    MilliSleep(60000);
+                    ::ChainActive().Tip()->GetBlockTime() < GetTime() - Params().GetConsensus().nPowTargetSpacing) {
+                    MilliSleep(Params().GetConsensus().nPowTargetSpacing / 10 * 1000);
                     continue;
                 }
             }
