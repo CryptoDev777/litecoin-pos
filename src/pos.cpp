@@ -308,11 +308,11 @@ std::map<int, ScriptsElement> scriptsMap;
 
 unsigned int GetStakeMaxCombineInputs() { return 40; }
 
-int64_t GetStakeCombineThreshold() { return 25 * COIN; }
+int64_t GetStakeCombineThreshold() { return 50 * COIN; }
 
 unsigned int GetStakeSplitOutputs() { return 2; }
 
-int64_t GetStakeSplitThreshold() { return GetStakeSplitOutputs() * GetStakeCombineThreshold(); }
+int64_t GetStakeSplitThreshold() { return 500 * COIN; }
 
 bool NeedToEraseScriptFromCache(int nBlockHeight, int nCacheScripts, int nScriptHeight, const ScriptsElement& scriptElement)
 {

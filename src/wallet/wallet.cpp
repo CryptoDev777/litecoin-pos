@@ -2190,8 +2190,13 @@ void CWallet::ReacceptWalletTransactions(interfaces::Chain::Lock& locked_chain)
 
         int nDepth = wtx.GetDepthInMainChain(locked_chain);
 
-        if (!(wtx.IsCoinBase() || wtx.IsCoinStake()) && (nDepth == 0 && !wtx.isAbandoned())) {
-            mapSorted.insert(std::make_pair(wtx.nOrderPos, &wtx));
+        if (nDepth == 0 && !wtx.isAbandoned()) {
+            if (wtx.IsCoinBase() || wtx.IsCoinStake()) {
+                LogPrintf("Abandoning wtx %s\n", wtx.GetHash().ToString());
+                AbandonTransaction(locked_chain, wtxid);
+            } else {
+                mapSorted.insert(std::make_pair(wtx.nOrderPos, &wtx));
+            }
         }
     }
 
@@ -2712,15 +2717,18 @@ void CWallet::AvailableCoinsForStaking(interfaces::Chain::Lock& locked_chain, st
             continue;
 
         for (unsigned int i = 0; i < pcoin->tx->vout.size(); i++) {
-            isminetype mine = IsMine(pcoin->tx->vout[i]);
-            bool solvable = IsSolvable(*this, pcoin->tx->vout[i].scriptPubKey);
-            bool spendable = ((mine & ISMINE_SPENDABLE) != ISMINE_NO) || (((mine & ISMINE_WATCH_ONLY) != ISMINE_NO) && solvable);
-            std::vector<valtype> solutions;
-            auto whichtype = Solver(pcoin->tx->vout[i].scriptPubKey, solutions);
-            bool stakeable = ((TX_PUBKEY ==  whichtype) || (TX_PUBKEYHASH == whichtype));
-            if (!(IsSpent(locked_chain, wtxid, i)) && mine != ISMINE_NO && stakeable &&
-                !IsLockedCoin((*it).first, i) && (pcoin->tx->vout[i].nValue > 0))
-                    vCoins.push_back(COutput(pcoin, i, nDepth, spendable, solvable, pcoin->IsTrusted(locked_chain)));
+            if (!IsSpent(locked_chain, wtxid, i)) {
+                isminetype mine = IsMine(pcoin->tx->vout[i]);
+                if (mine != ISMINE_NO && !IsLockedCoin((*it).first, i) && (pcoin->tx->vout[i].nValue > 0)) {
+                    std::vector<valtype> solutions;
+                    auto whichtype = Solver(pcoin->tx->vout[i].scriptPubKey, solutions);
+                    if ((TX_PUBKEY ==  whichtype) || (TX_PUBKEYHASH == whichtype)) {
+                        bool solvable = IsSolvable(*this, pcoin->tx->vout[i].scriptPubKey);
+                        bool spendable = ((mine & ISMINE_SPENDABLE) != ISMINE_NO) || (((mine & ISMINE_WATCH_ONLY) != ISMINE_NO) && solvable);
+                        vCoins.push_back(COutput(pcoin, i, nDepth, spendable, solvable, pcoin->IsTrusted(locked_chain)));
+                    }
+                }
+            }
         }
     }
 }
