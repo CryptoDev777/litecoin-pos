@@ -365,8 +365,11 @@ static UniValue getstakingstatus(const JSONRPCRequest& request)
 #endif
 
     bool staking = walletStakingEnabled && lastCoinStakeSearchInterval && nWeight;
-    bool hasConnections = g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL) != 0;
-    bool isSynced = ::ChainstateActive().IsInitialBlockDownload() == false;
+    bool hasConnections = g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL) >= 4;
+    bool isSynced = !::ChainstateActive().IsInitialBlockDownload() &&
+                    (::ChainActive().Tip()->GetBlockTime() >= GetTime() - Params().GetConsensus().nPowTargetSpacing) &&
+                    ::ChainActive().Tip()->HaveTxsDownloaded() &&
+                    ::ChainActive().Tip()->IsValid(BLOCK_VALID_TRANSACTIONS);
     bool hasCoins = nWeight != 0;
 
     UniValue obj(UniValue::VOBJ);

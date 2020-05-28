@@ -533,7 +533,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
 
     // Make this thread recognisable as the mining thread
     std::string threadName = "btpstake";
-    if(pwallet && pwallet->GetName() != "")
+    if (pwallet && pwallet->GetName() != "")
     {
         threadName = threadName + "-" + pwallet->GetName();
     }
@@ -541,7 +541,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
 
     bool fTryToSync = true;
     bool regtestMode = Params().MineBlocksOnDemand();
-    if(regtestMode){
+    if (regtestMode) {
         nMinerSleep = 30000; //limit regtest to 30s, otherwise it'll create 2 blocks per second
     }
 
@@ -559,15 +559,21 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
         }
         // Don't disable PoS mining for no connections if in regtest mode
         if (!regtestMode && !gArgs.GetBoolArg("-emergencystaking", false)) {
-            while (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) == 0 || ::ChainstateActive().IsInitialBlockDownload()) {
+            while (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) < 4 ||
+                    ::ChainstateActive().IsInitialBlockDownload() ||
+                    ::ChainActive().Tip()->GetBlockTime() < GetTime() - 2 * Params().GetConsensus().nPowTargetSpacing ||
+                    !::ChainActive().Tip()->HaveTxsDownloaded() ||
+                    !::ChainActive().Tip()->IsValid(BLOCK_VALID_TRANSACTIONS)) {
                 pwallet->m_last_coin_stake_search_interval = 0;
                 fTryToSync = true;
                 MilliSleep(1000);
             }
             if (fTryToSync) {
                 fTryToSync = false;
-                if (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) < 3 ||
-                    ::ChainActive().Tip()->GetBlockTime() < GetTime() - Params().GetConsensus().nPowTargetSpacing) {
+                if (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) < 4 ||
+                    ::ChainActive().Tip()->GetBlockTime() < GetTime() - Params().GetConsensus().nPowTargetSpacing ||
+                    !::ChainActive().Tip()->HaveTxsDownloaded() ||
+                    !::ChainActive().Tip()->IsValid(BLOCK_VALID_TRANSACTIONS)) {
                     MilliSleep(Params().GetConsensus().nPowTargetSpacing / 10 * 1000);
                     continue;
                 }
@@ -581,24 +587,29 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
         CAmount nValueIn = 0;
         std::set<std::pair<const CWalletTx*,unsigned int> > setCoins;
         {
+            int64_t start_time = GetTimeMillis();
             auto locked_chain = pwallet->chain().lock();
             LOCK(pwallet->cs_wallet);
             pwallet->SelectCoinsForStaking(*locked_chain, nTargetValue, setCoins, nValueIn);
+            LogPrint(BCLog::COINSTAKE, "Selecting coins for staking completed in %15dms\n", GetTimeMillis() - start_time);
         }
-        if(setCoins.size() > 0)
+        if (setCoins.size() > 0)
         {
             int64_t nTotalFees = 0;
             // First just create an empty block. No need to process transactions until we know we can create a block
             std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(CScript(), true, &nTotalFees, 0, false));
-            if (!pblocktemplate.get())
+            if (!pblocktemplate.get()) {
+                LogPrintf("ThreadStakeMiner(): Failed to create block template; thread exiting...\n");
                 return;
+            }
+
             CBlockIndex* pindexPrev = ::ChainActive().Tip();
 
             uint32_t beginningTime=GetAdjustedTime();
             beginningTime &= ~STAKE_TIMESTAMP_MASK;
-            for(uint32_t i=beginningTime;i<beginningTime + MAX_STAKE_LOOKAHEAD;i+=STAKE_TIMESTAMP_MASK+1) {
+            for (uint32_t i=beginningTime;i<beginningTime + MAX_STAKE_LOOKAHEAD;i+=STAKE_TIMESTAMP_MASK+1) {
                 // The information is needed for status bar to determine if the staker is trying to create block and when it will be created approximately,
-                if(pwallet->m_last_coin_stake_search_time == 0) pwallet->m_last_coin_stake_search_time = GetAdjustedTime(); // startup timestamp
+                if (pwallet->m_last_coin_stake_search_time == 0) pwallet->m_last_coin_stake_search_time = GetAdjustedTime(); // startup timestamp
                 // nLastCoinStakeSearchInterval > 0 mean that the staker is running
                 pwallet->m_last_coin_stake_search_interval = i - pwallet->m_last_coin_stake_search_time;
 
@@ -611,17 +622,19 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
 
                     if (::ChainActive().Tip()->GetBlockHash() != pblock->hashPrevBlock) {
                         //another block was received while building ours, scrap progress
-                        LogPrintf("ThreadStakeMiner(): Valid future PoS block was orphaned before becoming valid");
+                        LogPrintf("ThreadStakeMiner(): Valid future PoS block was orphaned before becoming valid\n");
                         break;
                     }
                     // Create a block that's properly populated with transactions
                     std::unique_ptr<CBlockTemplate> pblocktemplatefilled(
                             BlockAssembler(Params()).CreateNewBlock(pblock->vtx[1]->vout[1].scriptPubKey, true, &nTotalFees, i));
-                    if (!pblocktemplatefilled.get())
+                    if (!pblocktemplatefilled.get()) {
+                        LogPrintf("ThreadStakeMiner(): Failed to create block template; thread exiting...\n");
                         return;
+                    }
                     if (::ChainActive().Tip()->GetBlockHash() != pblock->hashPrevBlock) {
                         //another block was received while building ours, scrap progress
-                        LogPrintf("ThreadStakeMiner(): Valid future PoS block was orphaned before becoming valid");
+                        LogPrintf("ThreadStakeMiner(): Valid future PoS block was orphaned before becoming valid\n");
                         break;
                     }
                     // Sign the full block and use the timestamp from earlier for a valid stake
@@ -630,16 +643,16 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
                         // Should always reach here unless we spent too much time processing transactions and the timestamp is now invalid
                         // CheckStake also does CheckBlock and AcceptBlock to propogate it to the network
                         bool validBlock = false;
-                        while(!validBlock) {
+                        while (!validBlock) {
                             if (::ChainActive().Tip()->GetBlockHash() != pblockfilled->hashPrevBlock) {
                                 //another block was received while building ours, scrap progress
-                                LogPrintf("ThreadStakeMiner(): Valid future PoS block was orphaned before becoming valid");
+                                LogPrintf("ThreadStakeMiner(): Valid future PoS block was orphaned before becoming valid\n");
                                 break;
                             }
                             //check timestamps
                             if (pblockfilled->GetBlockTime() <= pindexPrev->GetBlockTime() ||
                                 FutureDrift(pblockfilled->GetBlockTime()) < pindexPrev->GetBlockTime()) {
-                                LogPrintf("ThreadStakeMiner(): Valid PoS block took too long to create and has expired");
+                                LogPrintf("ThreadStakeMiner(): Valid PoS block took too long to create and has expired\n");
                                 break; //timestamp too late, so ignore
                             }
                             if (pblockfilled->GetBlockTime() > FutureDrift(GetAdjustedTime())) {
@@ -648,7 +661,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
                                     //but also increases the chance of broadcasting invalid blocks and getting DoS banned by nodes,
                                     //or receiving more stale/orphan blocks than normal. Use at your own risk.
                                     MilliSleep(100);
-                                }else{
+                                } else {
                                     //too early, so wait 3 seconds and try again
                                     MilliSleep(3000);
                                 }
@@ -656,7 +669,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
                             }
                             validBlock=true;
                         }
-                        if(validBlock) {
+                        if (validBlock) {
                             CheckStake(pblockfilled, *pwallet);
                             // Update the search time when new valid block is created, needed for status bar icon
                             pwallet->m_last_coin_stake_search_time = pblockfilled->GetBlockTime();
