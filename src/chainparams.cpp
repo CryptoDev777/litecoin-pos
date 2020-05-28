@@ -56,12 +56,12 @@ public:
         strNetworkID = "main";
         consensus.nSubsidyHalvingInterval = 700000;
         consensus.BIP16Exception = uint256S("0x00000bcd2d9ccbb28606a8b2d962b97394f612bf6e021ce1d64d71cecb008029");
-        consensus.BIP34Height = 0;
-        consensus.BIP34Hash = uint256S("0x00000bcd2d9ccbb28606a8b2d962b97394f612bf6e021ce1d64d71cecb008029");
-        consensus.BIP65Height = 0; 
-        consensus.BIP66Height = 0; 
-        consensus.CSVHeight = 0; 
-        consensus.SegwitHeight = 0; 
+        consensus.BIP34Height = 1;
+        consensus.BIP34Hash = uint256S("0x00000b3b403a2b37780a8dc3813e02463cbaceab135efffe4aaacf0446f862d5");
+        consensus.BIP65Height = 1;
+        consensus.BIP66Height = 1;
+        consensus.CSVHeight = 1;
+        consensus.SegwitHeight = 1;
         consensus.MinBIP9WarningHeight = consensus.SegwitHeight + consensus.nMinerConfirmationWindow;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -84,10 +84,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000afddf8e0e630");
+        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000001a530ee33db82"); //block 112802
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x9f1a7b15917cbe23bb5dff82e60da8147820c58dea65793be72506c8e6d22b23"); // 0
+        consensus.defaultAssumeValid = uint256S("0x622a541f3292d61d8e6ee1d0288a98f8ec6fabbc25e14f7fa33540f1fa65b97a"); //block 112802
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -137,15 +137,17 @@ public:
         checkpointData = {
             {
                 { 0, uint256S("0x00000bcd2d9ccbb28606a8b2d962b97394f612bf6e021ce1d64d71cecb008029")},
-                { 50000, uint256S("0x9f1a7b15917cbe23bb5dff82e60da8147820c58dea65793be72506c8e6d22b23")}
+                { 50000, uint256S("0x9f1a7b15917cbe23bb5dff82e60da8147820c58dea65793be72506c8e6d22b23")},
+                { 87231, uint256S("0xb0836f48bbcf0e675e9957bdc9a73acee32acb50eb6380719d5348df5509ba02")},
+                { 112802,uint256S("0x622a541f3292d61d8e6ee1d0288a98f8ec6fabbc25e14f7fa33540f1fa65b97a")}
             }
         };
 
         chainTxData = ChainTxData{
-            // Data from RPC: getchaintxstats 4096 00000000000000000005f8920febd3925f8272a6a71237563d78c2edfdd09ddf
-            /* nTime    */ 1589411328,
-            /* nTxCount */ 101588,
-            /* dTxRate  */ 0.1024955454705053,
+            // Data from RPC: getchaintxstats 112801 622a541f3292d61d8e6ee1d0288a98f8ec6fabbc25e14f7fa33540f1fa65b97a
+            /* nTime    */ 1590610288,
+            /* nTxCount */ 235300,
+            /* dTxRate  */ 0.1091065598453151,
         };
     }
 };
@@ -159,12 +161,12 @@ public:
         strNetworkID = "test";
         consensus.nSubsidyHalvingInterval = 700000;
         consensus.BIP16Exception = uint256S("0x00000fe2acf48e35c5b594d9ff7db2a7bbafa1b73205b2789a6833be70595818");
-        consensus.BIP34Height = 0;
+        consensus.BIP34Height = 1;
         consensus.BIP34Hash = uint256S("0x00000fe2acf48e35c5b594d9ff7db2a7bbafa1b73205b2789a6833be70595818");
-        consensus.BIP65Height = 0; 
-        consensus.BIP66Height = 0;
-        consensus.CSVHeight = 0; 
-        consensus.SegwitHeight = 0; 
+        consensus.BIP65Height = 1;
+        consensus.BIP66Height = 1;
+        consensus.CSVHeight = 1;
+        consensus.SegwitHeight = 1;
         consensus.MinBIP9WarningHeight = consensus.SegwitHeight + consensus.nMinerConfirmationWindow;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
