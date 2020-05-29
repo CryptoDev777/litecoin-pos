@@ -545,6 +545,9 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
         nMinerSleep = 30000; //limit regtest to 30s, otherwise it'll create 2 blocks per second
     }
 
+    std::set<std::pair<const CWalletTx*,unsigned int> > setCoins;
+    uint256 chainTipForCoins;
+
     while (true)
     {
         while (pwallet->IsLocked() || !pwallet->m_enabled_staking)
@@ -581,14 +584,20 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
         CAmount nBalance = pwallet->GetBalance().m_mine_trusted;
         CAmount nTargetValue = nBalance - pwallet->m_reserve_balance;
         CAmount nValueIn = 0;
-        std::set<std::pair<const CWalletTx*,unsigned int> > setCoins;
-        {
+
+        if (chainTipForCoins != ::ChainActive().Tip()->GetBlockHash()) {
             int64_t start_time = GetTimeMillis();
+            LogPrint(BCLog::COINSTAKE, "Chain tip changed since previous coin selection, selecting new coins for staking...\n");
             auto locked_chain = pwallet->chain().lock();
             LOCK(pwallet->cs_wallet);
+            setCoins.clear();
+            chainTipForCoins = ::ChainActive().Tip()->GetBlockHash();
             pwallet->SelectCoinsForStaking(*locked_chain, nTargetValue, setCoins, nValueIn);
             LogPrint(BCLog::COINSTAKE, "Selecting coins for staking completed in %15dms\n", GetTimeMillis() - start_time);
+        } else {
+            LogPrint(BCLog::COINSTAKE, "Chain tip unchanged since previous coin selection, using previously selected coins...\n");
         }
+
         if (setCoins.size() > 0)
         {
             int64_t nTotalFees = 0;
