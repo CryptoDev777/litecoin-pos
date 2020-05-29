@@ -559,11 +559,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
         }
         // Don't disable PoS mining for no connections if in regtest mode
         if (!regtestMode && !gArgs.GetBoolArg("-emergencystaking", false)) {
-            while (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) < 4 ||
-                    ::ChainstateActive().IsInitialBlockDownload() ||
-                    ::ChainActive().Tip()->GetBlockTime() < GetTime() - 2 * Params().GetConsensus().nPowTargetSpacing ||
-                    !::ChainActive().Tip()->HaveTxsDownloaded() ||
-                    !::ChainActive().Tip()->IsValid(BLOCK_VALID_TRANSACTIONS)) {
+            while (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) < 4 || ::ChainstateActive().IsInitialBlockDownload()) {
                 pwallet->m_last_coin_stake_search_interval = 0;
                 fTryToSync = true;
                 MilliSleep(1000);
@@ -656,7 +652,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
                                 break; //timestamp too late, so ignore
                             }
                             if (pblockfilled->GetBlockTime() > FutureDrift(GetAdjustedTime())) {
-                                if (gArgs.IsArgSet("-aggressive-staking")) {
+                                if (gArgs.IsArgSet("-aggressivestaking")) {
                                     //if being agressive, then check more often to publish immediately when valid. This might allow you to find more blocks, 
                                     //but also increases the chance of broadcasting invalid blocks and getting DoS banned by nodes,
                                     //or receiving more stale/orphan blocks than normal. Use at your own risk.
