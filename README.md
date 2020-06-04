@@ -19,7 +19,7 @@ allowing it not only to scale better and be orders of magnitude more efficient i
 terms of power consumption, but it is also lowering the entry barrier for contributing
 to the creation of new blocks.
 
-For more information, as well as an immediately useable, binary version of
+For more information, as well as an immediately usable, binary version of
 the Bitcoin PoS Core software, see https://www.bitcoinpos.net/#wallet-btp, or read the
 [original whitepaper](https://www.bitcoinpos.net/WhitePaperBTP.pdf).
 
@@ -32,7 +32,7 @@ information or see https://opensource.org/licenses/MIT.
 Development Process
 -------------------
 
-The `master` branch is regularly built and tested, but is not guaranteed to be
+The `master` branch is regularly built (see doc/build-*.md for instructions) and tested, but is not guaranteed to be
 completely stable. [Tags](https://github.com/bitcoin-pos/bitcoin-pos/tags) are created
 regularly to indicate new official, stable release versions of Bitcoin PoS Core.
 

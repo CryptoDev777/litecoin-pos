@@ -5,10 +5,13 @@
 src/bitcoin
 src/bitcoin-posd
 src/bitcoin-pos-cli
+src/bitcoin-pos-gui
+src/bitcoin-pos-node
 src/bitcoin-pos-tx
 src/bitcoin-pos-wallet
+src/test/fuzz
+!src/test/fuzz/*.*
 src/test/test_bitcoin
-src/test/test_bitcoin_fuzzy
 src/qt/test/test_bitcoin-qt
 
 # autoreconf
@@ -28,6 +31,7 @@ build-aux/m4/ltversion.m4
 build-aux/missing
 build-aux/compile
 build-aux/test-driver
+config.cache
 config.log
 config.status
 configure
@@ -88,7 +92,7 @@ src/qt/bitcoin-qt.includes
 *.qm
 Makefile
 !depends/Makefile
-bitcoin-pos-qt
+src/qt/bitcoin-pos-qt
 Bitcoin-POS-Qt.app
 background.tiff*
 
@@ -105,6 +109,9 @@ qrc_*.cpp
 # Mac specific
 .DS_Store
 build
+
+# Previous releases
+releases
 
 #lcov
 *.gcno

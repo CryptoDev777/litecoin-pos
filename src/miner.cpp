@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2019 The Bitcoin Core developers
+// Copyright (c) 2009-2020 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -19,17 +19,14 @@
 #include <pow.h>
 #include <pos.h>
 #include <primitives/transaction.h>
-#include <script/standard.h>
 #include <timedata.h>
 #include <util/moneystr.h>
 #include <util/system.h>
-#include <util/validation.h>
 #ifdef ENABLE_WALLET
 #include <wallet/wallet.h>
 #endif
 
 #include <algorithm>
-#include <queue>
 #include <utility>
 
 unsigned int nMinerSleep = STAKER_POLLING_PERIOD;
@@ -49,12 +46,25 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
     return nNewTime - nOldTime;
 }
 
+void RegenerateCommitments(CBlock& block)
+{
+    CMutableTransaction tx{*block.vtx.at(0)};
+    tx.vout.erase(tx.vout.begin() + GetWitnessCommitmentIndex(block));
+    block.vtx.at(0) = MakeTransactionRef(tx);
+
+    GenerateCoinbaseCommitment(block, WITH_LOCK(cs_main, return LookupBlockIndex(block.hashPrevBlock)), Params().GetConsensus());
+
+    block.hashMerkleRoot = BlockMerkleRoot(block);
+}
+
 BlockAssembler::Options::Options() {
     blockMinFeeRate = CFeeRate(DEFAULT_BLOCK_MIN_TX_FEE);
     nBlockMaxWeight = DEFAULT_BLOCK_MAX_WEIGHT;
 }
 
-BlockAssembler::BlockAssembler(const CChainParams& params, const Options& options) : chainparams(params)
+BlockAssembler::BlockAssembler(const CTxMemPool& mempool, const CChainParams& params, const Options& options)
+    : chainparams(params),
+      m_mempool(mempool)
 {
     blockMinFeeRate = options.blockMinFeeRate;
     // Limit weight to between 4K and MAX_BLOCK_WEIGHT-4K for sanity:
@@ -76,7 +86,8 @@ static BlockAssembler::Options DefaultOptions()
     return options;
 }
 
-BlockAssembler::BlockAssembler(const CChainParams& params) : BlockAssembler(params, DefaultOptions()) {}
+BlockAssembler::BlockAssembler(const CTxMemPool& mempool, const CChainParams& params)
+    : BlockAssembler(mempool, params, DefaultOptions()) {}
 
 void BlockAssembler::resetBlock()
 {
@@ -113,7 +124,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     pblocktemplate->vTxFees.push_back(-1); // updated at end
     pblocktemplate->vTxSigOpsCost.push_back(-1); // updated at end
 
-    LOCK2(cs_main, mempool.cs);
+    LOCK2(cs_main, m_mempool.cs);
     CBlockIndex* pindexPrev = ::ChainActive().Tip();
     assert(pindexPrev != nullptr);
     nHeight = pindexPrev->nHeight + 1;
@@ -201,9 +212,9 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     pblock->nNonce         = 0;
     pblocktemplate->vTxSigOpsCost[0] = WITNESS_SCALE_FACTOR * GetLegacySigOpCount(*pblock->vtx[0]);
 
-    CValidationState state;
+    BlockValidationState state;
     if (!fProofOfStake && !TestBlockValidity(state, chainparams, *pblock, pindexPrev, false, false)) {
-        throw std::runtime_error(strprintf("%s: TestBlockValidity failed: %s", __func__, FormatStateMessage(state)));
+        throw std::runtime_error(strprintf("%s: TestBlockValidity failed: %s", __func__, state.ToString()));
     }
 
     return std::move(pblocktemplate);
@@ -272,7 +283,7 @@ int BlockAssembler::UpdatePackagesForAdded(const CTxMemPool::setEntries& already
     int nDescendantsUpdated = 0;
     for (CTxMemPool::txiter it : alreadyAdded) {
         CTxMemPool::setEntries descendants;
-        mempool.CalculateDescendants(it, descendants);
+        m_mempool.CalculateDescendants(it, descendants);
         // Insert all descendants (not yet in block) into the modified set
         for (CTxMemPool::txiter desc : descendants) {
             if (alreadyAdded.count(desc))
@@ -304,7 +315,7 @@ int BlockAssembler::UpdatePackagesForAdded(const CTxMemPool::setEntries& already
 // cached size/sigops/fee values that are not actually correct.
 bool BlockAssembler::SkipMapTxEntry(CTxMemPool::txiter it, indexed_modified_transaction_set &mapModifiedTx, CTxMemPool::setEntries &failedTx)
 {
-    assert (it != mempool.mapTx.end());
+    assert(it != m_mempool.mapTx.end());
     return mapModifiedTx.count(it) || inBlock.count(it) || failedTx.count(it);
 }
 
@@ -341,7 +352,7 @@ void BlockAssembler::addPackageTxs(int &nPackagesSelected, int &nDescendantsUpda
     // and modifying them for their already included ancestors
     UpdatePackagesForAdded(inBlock, mapModifiedTx);
 
-    CTxMemPool::indexed_transaction_set::index<ancestor_score>::type::iterator mi = mempool.mapTx.get<ancestor_score>().begin();
+    CTxMemPool::indexed_transaction_set::index<ancestor_score>::type::iterator mi = m_mempool.mapTx.get<ancestor_score>().begin();
     CTxMemPool::txiter iter;
 
     // Limit the number of attempts to add transactions to the block when it is
@@ -350,11 +361,10 @@ void BlockAssembler::addPackageTxs(int &nPackagesSelected, int &nDescendantsUpda
     const int64_t MAX_CONSECUTIVE_FAILURES = 1000;
     int64_t nConsecutiveFailed = 0;
 
-    while (mi != mempool.mapTx.get<ancestor_score>().end() || !mapModifiedTx.empty())
-    {
+    while (mi != m_mempool.mapTx.get<ancestor_score>().end() || !mapModifiedTx.empty()) {
         // First try to find a new transaction in mapTx to evaluate.
-        if (mi != mempool.mapTx.get<ancestor_score>().end() &&
-                SkipMapTxEntry(mempool.mapTx.project<0>(mi), mapModifiedTx, failedTx)) {
+        if (mi != m_mempool.mapTx.get<ancestor_score>().end() &&
+            SkipMapTxEntry(m_mempool.mapTx.project<0>(mi), mapModifiedTx, failedTx)) {
             ++mi;
             continue;
         }
@@ -364,13 +374,13 @@ void BlockAssembler::addPackageTxs(int &nPackagesSelected, int &nDescendantsUpda
         bool fUsingModified = false;
 
         modtxscoreiter modit = mapModifiedTx.get<ancestor_score>().begin();
-        if (mi == mempool.mapTx.get<ancestor_score>().end()) {
+        if (mi == m_mempool.mapTx.get<ancestor_score>().end()) {
             // We're out of entries in mapTx; use the entry from mapModifiedTx
             iter = modit->iter;
             fUsingModified = true;
         } else {
             // Try to compare the mapTx entry to the mapModifiedTx entry
-            iter = mempool.mapTx.project<0>(mi);
+            iter = m_mempool.mapTx.project<0>(mi);
             if (modit != mapModifiedTx.get<ancestor_score>().end() &&
                     CompareTxMemPoolEntryByAncestorFee()(*modit, CTxMemPoolModifiedEntry(iter))) {
                 // The best entry in mapModifiedTx has higher score
@@ -425,7 +435,7 @@ void BlockAssembler::addPackageTxs(int &nPackagesSelected, int &nDescendantsUpda
         CTxMemPool::setEntries ancestors;
         uint64_t nNoLimit = std::numeric_limits<uint64_t>::max();
         std::string dummy;
-        mempool.CalculateMemPoolAncestors(*iter, ancestors, nNoLimit, nNoLimit, nNoLimit, nNoLimit, dummy, false);
+        m_mempool.CalculateMemPoolAncestors(*iter, ancestors, nNoLimit, nNoLimit, nNoLimit, nNoLimit, dummy, false);
 
         onlyUnconfirmed(ancestors);
         ancestors.insert(iter);
@@ -471,7 +481,7 @@ void IncrementExtraNonce(CBlock* pblock, const CBlockIndex* pindexPrev, unsigned
     ++nExtraNonce;
     unsigned int nHeight = pindexPrev->nHeight+1; // Height first in coinbase required for block.version=2
     CMutableTransaction txCoinbase(*pblock->vtx[0]);
-    txCoinbase.vin[0].scriptSig = (CScript() << nHeight << CScriptNum(nExtraNonce)) + COINBASE_FLAGS;
+    txCoinbase.vin[0].scriptSig = (CScript() << nHeight << CScriptNum(nExtraNonce));
     assert(txCoinbase.vin[0].scriptSig.size() <= 100);
 
     pblock->vtx[0] = MakeTransactionRef(std::move(txCoinbase));
@@ -488,7 +498,7 @@ void IncrementExtraNonce(CBlock* pblock, const CBlockIndex* pindexPrev, unsigned
 // Looking for suitable coins for creating new block.
 //
 
-bool CheckStake(const std::shared_ptr<const CBlock> pblock, CWallet& wallet)
+bool CheckStake(const std::shared_ptr<const CBlock> pblock, CWallet& wallet, ChainstateManager* chainman)
 {
     uint256 proofHash, hashTarget;
     uint256 hashBlock = pblock->GetHash();
@@ -497,7 +507,7 @@ bool CheckStake(const std::shared_ptr<const CBlock> pblock, CWallet& wallet)
         return error("CheckStake() : %s is not a proof-of-stake block", hashBlock.GetHex());
 
     // verify hash target and signature of coinstake tx
-    CValidationState state;
+    BlockValidationState state;
     if (!CheckProofOfStake(::BlockIndex()[pblock->hashPrevBlock], state, *pblock->vtx[1], pblock->nBits, pblock->nTime, proofHash, hashTarget, ::ChainstateActive().CoinsTip()))
         return error("CheckStake() : proof-of-stake checking failed");
 
@@ -508,12 +518,11 @@ bool CheckStake(const std::shared_ptr<const CBlock> pblock, CWallet& wallet)
 
     // Found a solution
     {
-        auto locked_chain = wallet.chain().lock();
         if (pblock->hashPrevBlock != ::ChainActive().Tip()->GetBlockHash())
             return error("CheckStake() : generated block is stale");
 
         for(const CTxIn& vin : pblock->vtx[1]->vin) {
-            if (wallet.IsSpent(*locked_chain, vin.prevout.hash, vin.prevout.n)) {
+            if (wallet.IsSpent(vin.prevout.hash, vin.prevout.n)) {
                 return error("CheckStake() : generated block became invalid due to stake UTXO being spent");
             }
         }
@@ -521,13 +530,13 @@ bool CheckStake(const std::shared_ptr<const CBlock> pblock, CWallet& wallet)
 
     // Process this block the same as if we had received it from another node
     bool fNewBlock = false;
-    if (!ProcessNewBlock(Params(), pblock, true, &fNewBlock))
+    if (!chainman->ProcessNewBlock(Params(), pblock, true, &fNewBlock))
         return error("CheckStake() : ProcessBlock, block not accepted");
 
     return true;
 }
 
-void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
+void ThreadStakeMiner(CWallet *pwallet, CConnman* connman, ChainstateManager* chainman, CTxMemPool* mempool)
 {
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
 
@@ -553,11 +562,11 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
         while (pwallet->IsLocked() || !pwallet->m_enabled_staking)
         {
             pwallet->m_last_coin_stake_search_interval = 0;
-            MilliSleep(10000);
+            UninterruptibleSleep(std::chrono::milliseconds{10000});
         }
         // Check if the last PoW block has been mined yet
         if (::ChainActive().Tip()->nHeight < Params().GetConsensus().nLastPOWBlock) {
-            MilliSleep(Params().GetConsensus().nPowTargetSpacing * 1000); // sleep one block
+            UninterruptibleSleep(std::chrono::milliseconds{Params().GetConsensus().nPowTargetSpacing * 1000});// sleep one block
             continue;
         }
         // Don't disable PoS mining for no connections if in regtest mode
@@ -565,7 +574,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
             while (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) < 4 || ::ChainstateActive().IsInitialBlockDownload()) {
                 pwallet->m_last_coin_stake_search_interval = 0;
                 fTryToSync = true;
-                MilliSleep(1000);
+                UninterruptibleSleep(std::chrono::milliseconds{1000});
             }
             if (fTryToSync) {
                 fTryToSync = false;
@@ -573,7 +582,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
                     ::ChainActive().Tip()->GetBlockTime() < GetTime() - Params().GetConsensus().nPowTargetSpacing ||
                     !::ChainActive().Tip()->HaveTxsDownloaded() ||
                     !::ChainActive().Tip()->IsValid(BLOCK_VALID_TRANSACTIONS)) {
-                    MilliSleep(Params().GetConsensus().nPowTargetSpacing / 10 * 1000);
+                    UninterruptibleSleep(std::chrono::milliseconds{Params().GetConsensus().nPowTargetSpacing / 10 * 1000});
                     continue;
                 }
             }
@@ -588,11 +597,10 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
         if (chainTipForCoins != ::ChainActive().Tip()->GetBlockHash()) {
             int64_t start_time = GetTimeMillis();
             LogPrint(BCLog::COINSTAKE, "Chain tip changed since previous coin selection, selecting new coins for staking...\n");
-            auto locked_chain = pwallet->chain().lock();
             LOCK(pwallet->cs_wallet);
             setCoins.clear();
             chainTipForCoins = ::ChainActive().Tip()->GetBlockHash();
-            pwallet->SelectCoinsForStaking(*locked_chain, nTargetValue, setCoins, nValueIn);
+            pwallet->SelectCoinsForStaking(nTargetValue, setCoins, nValueIn);
             LogPrint(BCLog::COINSTAKE, "Selecting coins for staking completed in %15dms\n", GetTimeMillis() - start_time);
         } else {
             LogPrint(BCLog::COINSTAKE, "Chain tip unchanged since previous coin selection, using previously selected coins...\n");
@@ -602,7 +610,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
         {
             int64_t nTotalFees = 0;
             // First just create an empty block. No need to process transactions until we know we can create a block
-            std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(CScript(), true, &nTotalFees, 0, false));
+            std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(*mempool, Params()).CreateNewBlock(CScript(), true, &nTotalFees, 0, false));
             if (!pblocktemplate.get()) {
                 LogPrintf("ThreadStakeMiner(): Failed to create block template; thread exiting...\n");
                 return;
@@ -632,7 +640,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
                     }
                     // Create a block that's properly populated with transactions
                     std::unique_ptr<CBlockTemplate> pblocktemplatefilled(
-                            BlockAssembler(Params()).CreateNewBlock(pblock->vtx[1]->vout[1].scriptPubKey, true, &nTotalFees, i));
+                            BlockAssembler(*mempool, Params()).CreateNewBlock(pblock->vtx[1]->vout[1].scriptPubKey, true, &nTotalFees, i));
                     if (!pblocktemplatefilled.get()) {
                         LogPrintf("ThreadStakeMiner(): Failed to create block template; thread exiting...\n");
                         return;
@@ -665,17 +673,17 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
                                     //if being agressive, then check more often to publish immediately when valid. This might allow you to find more blocks, 
                                     //but also increases the chance of broadcasting invalid blocks and getting DoS banned by nodes,
                                     //or receiving more stale/orphan blocks than normal. Use at your own risk.
-                                    MilliSleep(100);
+                                    UninterruptibleSleep(std::chrono::milliseconds{100});
                                 } else {
                                     //too early, so wait 3 seconds and try again
-                                    MilliSleep(3000);
+                                    UninterruptibleSleep(std::chrono::milliseconds{3000});
                                 }
                                 continue;
                             }
                             validBlock=true;
                         }
                         if (validBlock) {
-                            CheckStake(pblockfilled, *pwallet);
+                            CheckStake(pblockfilled, *pwallet, chainman);
                             // Update the search time when new valid block is created, needed for status bar icon
                             pwallet->m_last_coin_stake_search_time = pblockfilled->GetBlockTime();
                         }
@@ -686,11 +694,11 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman)
                 }
             }
         }
-        MilliSleep(nMinerSleep);
+        UninterruptibleSleep(std::chrono::milliseconds{nMinerSleep});
     }
 }
 
-void StakeBTPs(bool fStake, CWallet *pwallet, CConnman* connman, boost::thread_group*& stakeThread)
+void StakeBTPs(bool fStake, CWallet *pwallet, CConnman* connman, ChainstateManager* chainman, CTxMemPool* mempool, boost::thread_group*& stakeThread)
 {
     if (stakeThread != nullptr)
     {
@@ -702,7 +710,7 @@ void StakeBTPs(bool fStake, CWallet *pwallet, CConnman* connman, boost::thread_g
     if(fStake)
     {
         stakeThread = new boost::thread_group();
-        stakeThread->create_thread(boost::bind(&ThreadStakeMiner, pwallet, connman));
+        stakeThread->create_thread(boost::bind(&ThreadStakeMiner, pwallet, connman, chainman, mempool));
     }
 }
 #endif

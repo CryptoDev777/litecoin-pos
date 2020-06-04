@@ -102,7 +102,7 @@ bool CheckStakeKernelHash(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t 
 }
 
 // Check kernel hash target and coinstake signature
-bool CheckProofOfStake(CBlockIndex* pindexPrev, CValidationState& state, const CTransaction& tx, unsigned int nBits, uint32_t nTimeBlock, uint256& hashProofOfStake, uint256& targetProofOfStake, CCoinsViewCache& view)
+bool CheckProofOfStake(CBlockIndex* pindexPrev, BlockValidationState& state, const CTransaction& tx, unsigned int nBits, uint32_t nTimeBlock, uint256& hashProofOfStake, uint256& targetProofOfStake, CCoinsViewCache& view)
 {
     if (!tx.IsCoinStake())
         return error("CheckProofOfStake() : called on non-coinstake %s", tx.GetHash().ToString());
@@ -113,26 +113,26 @@ bool CheckProofOfStake(CBlockIndex* pindexPrev, CValidationState& state, const C
     Coin coinPrev;
 
     if (!view.GetCoin(txin.prevout, coinPrev))
-        return state.Invalid(ValidationInvalidReason::BLOCK_INVALID_HEADER, false, REJECT_INVALID, "bad-stake-prevout-doesnotexist", 
+        return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-stake-prevout-doesnotexist", 
                             strprintf("CheckProofOfStake() : Stake prevout does not exist %s", txin.prevout.hash.ToString()));
 
     if (pindexPrev->nHeight + 1 - coinPrev.nHeight < COINBASE_MATURITY)
-        return state.Invalid(ValidationInvalidReason::BLOCK_INVALID_HEADER, false, REJECT_INVALID, "bad-stake-prevout-notmature", 
+        return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-stake-prevout-notmature", 
                             strprintf("CheckProofOfStake() : Stake prevout is not mature, expecting %i and only matured to %i", COINBASE_MATURITY, pindexPrev->nHeight + 1 - coinPrev.nHeight));
     
     CBlockIndex* blockFrom = pindexPrev->GetAncestor(coinPrev.nHeight);
     if (!blockFrom) 
-        return state.Invalid(ValidationInvalidReason::BLOCK_INVALID_HEADER, false, REJECT_INVALID, "bad-stake-prevout-couldnotload", 
+        return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-stake-prevout-couldnotload", 
                             strprintf("CheckProofOfStake() : Block at height %i for prevout can not be loaded", coinPrev.nHeight));
 
     // Verify signature
     if (!VerifySignature(coinPrev, txin.prevout.hash, tx, 0, SCRIPT_VERIFY_NONE))
-        return state.Invalid(ValidationInvalidReason::BLOCK_INVALID_HEADER, false, REJECT_INVALID, "bad-stake-signature-verify", 
+        return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-stake-signature-verify", 
                             strprintf("CheckProofOfStake() : VerifySignature failed on coinstake %s", tx.GetHash().ToString()));
 
     if (!CheckStakeKernelHash(pindexPrev, nBits, blockFrom->nTime, coinPrev.out.nValue, txin.prevout, nTimeBlock, hashProofOfStake, targetProofOfStake, LogInstance().WillLogCategory(BCLog::COINSTAKE)))
         // may occur during initial download or if behind on block chain sync
-        return state.Invalid(ValidationInvalidReason::BLOCK_HEADER_SYNC, false, REJECT_INVALID, "bad-stake-kernel-check", 
+        return state.Invalid(BlockValidationResult::BLOCK_HEADER_SYNC, "bad-stake-kernel-check", 
                             strprintf("CheckProofOfStake() : INFO: check kernel failed on coinstake %s, hashProof=%s", tx.GetHash().ToString(), hashProofOfStake.ToString()));
         
     return true;
