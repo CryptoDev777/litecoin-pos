@@ -1413,6 +1413,7 @@ bool AppInitMain(const util::Ref& context, NodeContext& node)
 #ifdef ENABLE_WALLET
     CWallet::defaultConnman = node.connman.get();
     CWallet::defaultChainman = node.chainman;
+    CWallet::defaultMempool = node.mempool;
 #endif
 
     // sanitize comments per BIP-0014, format user agent and check total size
