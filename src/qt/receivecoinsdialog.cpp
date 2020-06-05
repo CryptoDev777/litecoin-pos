@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018 The Bitcoin Core developers
+// Copyright (c) 2011-2019 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,7 +7,6 @@
 #include <qt/receivecoinsdialog.h>
 #include <qt/forms/ui_receivecoinsdialog.h>
 
-#include <interfaces/node.h>
 #include <qt/addresstablemodel.h>
 #include <qt/bitcoinaddresstypes.h>
 #include <qt/optionsmodel.h>
@@ -95,26 +94,22 @@ void ReceiveCoinsDialog::setModel(WalletModel *_model)
         columnResizingFixer = new GUIUtil::TableViewLastColumnResizingFixer(tableView, AMOUNT_MINIMUM_COLUMN_WIDTH, DATE_COLUMN_WIDTH, this);
 
         ui->addressTypeSelector->setModel(new BitcoinAddressTypes(this));
-        if (model->node().isAddressTypeSet()) {
-            // user explicitly set the type, use it
-            if (model->wallet().getDefaultAddressType() == OutputType::BECH32) {
-                ui->addressTypeSelector->setCurrentIndex(BitcoinAddressType::NATIVE_SEGWIT);
-            } else if (model->wallet().getDefaultAddressType() == OutputType::P2SH_SEGWIT){
-                ui->addressTypeSelector->setCurrentIndex(BitcoinAddressType::NESTED_SEGWIT);
-            } else {
-                ui->addressTypeSelector->setCurrentIndex(BitcoinAddressType::LEGACY);
-            }
+        
+        // user explicitly set the type, use it
+        if (model->wallet().getDefaultAddressType() == OutputType::BECH32) {
+            ui->addressTypeSelector->setCurrentIndex(BitcoinAddressType::NATIVE_SEGWIT);
+        } else if (model->wallet().getDefaultAddressType() == OutputType::P2SH_SEGWIT){
+            ui->addressTypeSelector->setCurrentIndex(BitcoinAddressType::NESTED_SEGWIT);
         } else {
-            // Always fall back to default in the gui
             ui->addressTypeSelector->setCurrentIndex(BitcoinAddressType::LEGACY);
         }
 
         // Set the button to be enabled or disabled based on whether the wallet can give out new addresses.
-        ui->receiveButton->setEnabled(model->canGetAddresses());
+        ui->receiveButton->setEnabled(model->wallet().canGetAddresses());
 
         // Enable/disable the receive button if the wallet is now able/unable to give out new addresses.
         connect(model, &WalletModel::canGetAddressesChanged, [this] {
-            ui->receiveButton->setEnabled(model->canGetAddresses());
+            ui->receiveButton->setEnabled(model->wallet().canGetAddresses());
         });
     }
 }

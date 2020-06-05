@@ -1,5 +1,5 @@
 // Copyright (c) 2010 Satoshi Nakamoto
-// Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2009-2019 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -53,7 +53,7 @@ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits
 class CMainParams : public CChainParams {
 public:
     CMainParams() {
-        strNetworkID = "main";
+        strNetworkID = CBaseChainParams::MAIN;
         consensus.nSubsidyHalvingInterval = 700000;
         consensus.BIP16Exception = uint256S("0x00000bcd2d9ccbb28606a8b2d962b97394f612bf6e021ce1d64d71cecb008029");
         consensus.BIP34Height = 1;
@@ -133,6 +133,7 @@ public:
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
         m_is_test_chain = false;
+        m_is_mockable_chain = false;
 
         checkpointData = {
             {
@@ -158,7 +159,7 @@ public:
 class CTestNetParams : public CChainParams {
 public:
     CTestNetParams() {
-        strNetworkID = "test";
+        strNetworkID = CBaseChainParams::TESTNET;
         consensus.nSubsidyHalvingInterval = 700000;
         consensus.BIP16Exception = uint256S("0x00000fe2acf48e35c5b594d9ff7db2a7bbafa1b73205b2789a6833be70595818");
         consensus.BIP34Height = 1;
@@ -200,7 +201,7 @@ public:
         pchMessageStart[3] = 0x29;
         nDefaultPort = 48932;
         nPruneAfterHeight = 1000;
-        m_assumed_blockchain_size = 30;
+        m_assumed_blockchain_size = 40;
         m_assumed_chain_state_size = 2;
 
         genesis = CreateGenesisBlock(1588417200, 3152477, 0x1e0fffff, 1, 50 * COIN);
@@ -227,7 +228,7 @@ public:
         fDefaultConsistencyChecks = false;
         fRequireStandard = false;
         m_is_test_chain = true;
-
+        m_is_mockable_chain = false;
 
         checkpointData = {
             {
@@ -250,7 +251,7 @@ public:
 class CRegTestParams : public CChainParams {
 public:
     explicit CRegTestParams(const ArgsManager& args) {
-        strNetworkID = "regtest";
+        strNetworkID =  CBaseChainParams::REGTEST;
         consensus.nSubsidyHalvingInterval = 150;
         consensus.BIP16Exception = uint256();
         consensus.BIP34Height = 500; // BIP34 activated on regtest (Used in functional tests)
@@ -306,6 +307,7 @@ public:
         fDefaultConsistencyChecks = true;
         fRequireStandard = true;
         m_is_test_chain = true;
+        m_is_mockable_chain = true;
 
         checkpointData = {
             {
