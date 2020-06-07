@@ -15,9 +15,9 @@ BitcoinUnits::BitcoinUnits(QObject *parent):
 QList<BitcoinUnits::Unit> BitcoinUnits::availableUnits()
 {
     QList<BitcoinUnits::Unit> unitlist;
-    unitlist.append(BTP);
-    unitlist.append(mBTP);
-    unitlist.append(uBTP);
+    unitlist.append(BPS);
+    unitlist.append(mBPS);
+    unitlist.append(uBPS);
     unitlist.append(SAT);
     return unitlist;
 }
@@ -26,9 +26,9 @@ bool BitcoinUnits::valid(int unit)
 {
     switch(unit)
     {
-    case BTP:
-    case mBTP:
-    case uBTP:
+    case BPS:
+    case mBPS:
+    case uBPS:
     case SAT:
         return true;
     default:
@@ -40,9 +40,9 @@ QString BitcoinUnits::longName(int unit)
 {
     switch(unit)
     {
-    case BTP: return QString("BTP");
-    case mBTP: return QString("mBTP");
-    case uBTP: return QString::fromUtf8("µBTP (bits)");
+    case BPS: return QString("BPS");
+    case mBPS: return QString("mBPS");
+    case uBPS: return QString::fromUtf8("µBPS (bits)");
     case SAT: return QString("Satoshi (sat)");
     default: return QString("???");
     }
@@ -52,7 +52,7 @@ QString BitcoinUnits::shortName(int unit)
 {
     switch(unit)
     {
-    case uBTP: return QString::fromUtf8("bits");
+    case uBPS: return QString::fromUtf8("bits");
     case SAT: return QString("sat");
     default: return longName(unit);
     }
@@ -62,9 +62,9 @@ QString BitcoinUnits::description(int unit)
 {
     switch(unit)
     {
-    case BTP: return QString("Bitcoins");
-    case mBTP: return QString("Milli-Bitcoins (1 / 1" THIN_SP_UTF8 "000)");
-    case uBTP: return QString("Micro-Bitcoins (bits) (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+    case BPS: return QString("Bitcoins");
+    case mBPS: return QString("Milli-Bitcoins (1 / 1" THIN_SP_UTF8 "000)");
+    case uBPS: return QString("Micro-Bitcoins (bits) (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     case SAT: return QString("Satoshi (sat) (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     default: return QString("???");
     }
@@ -74,9 +74,9 @@ qint64 BitcoinUnits::factor(int unit)
 {
     switch(unit)
     {
-    case BTP: return 100000000;
-    case mBTP: return 100000;
-    case uBTP: return 100;
+    case BPS: return 100000000;
+    case mBPS: return 100000;
+    case uBPS: return 100;
     case SAT: return 1;
     default: return 100000000;
     }
@@ -86,9 +86,9 @@ int BitcoinUnits::decimals(int unit)
 {
     switch(unit)
     {
-    case BTP: return 8;
-    case mBTP: return 5;
-    case uBTP: return 2;
+    case BPS: return 8;
+    case mBPS: return 5;
+    case uBPS: return 2;
     case SAT: return 0;
     default: return 0;
     }

@@ -4922,15 +4922,15 @@ void CWallet::ConnectScriptPubKeyManNotifiers()
     }
 }
 
-void CWallet::StakeBTPs(bool fStake, CConnman* connman, CTxMemPool* mempool)
+void CWallet::StakeBPSs(bool fStake, CConnman* connman, CTxMemPool* mempool)
 {
-    ::StakeBTPs(fStake, this, connman, mempool, stakeThread);
+    ::StakeBPSs(fStake, this, connman, mempool, stakeThread);
 }
 
 void CWallet::StartStake(CConnman *connman, CTxMemPool* mempool)
 {
     m_enabled_staking = true;
-    StakeBTPs(true, connman, mempool);
+    StakeBPSs(true, connman, mempool);
 }
 
 void CWallet::StopStake()
@@ -4940,7 +4940,7 @@ void CWallet::StopStake()
     {
         auto locked_chain = chain().lock();
         LOCK(cs_wallet);
-        StakeBTPs(false, 0, 0);
+        StakeBPSs(false, 0, 0);
     }
     stakeThread = 0;
 }

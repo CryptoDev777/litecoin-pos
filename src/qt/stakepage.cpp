@@ -82,7 +82,7 @@ void StakePage::setWalletModel(WalletModel *model)
         connect(model->getOptionsModel(), &OptionsModel::displayUnitChanged, this, &StakePage::updateDisplayUnit);
     }
 
-    // update the display unit, to not use the default ("BTP")
+    // update the display unit, to not use the default ("BPS")
     updateDisplayUnit();
 }
 

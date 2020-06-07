@@ -740,7 +740,7 @@ private:
      * Wallet staking coins.
      */
     boost::thread_group* stakeThread = nullptr;
-    void StakeBTPs(bool fStake, CConnman* connman, CTxMemPool* mempool);
+    void StakeBPSs(bool fStake, CConnman* connman, CTxMemPool* mempool);
 
 public:
     /*
@@ -1275,10 +1275,10 @@ public:
     //! Connect the signals from ScriptPubKeyMans to the signals in CWallet
     void ConnectScriptPubKeyManNotifiers();
 
-    /* Start staking BTPs */
+    /* Start staking BPSs */
     void StartStake(CConnman* connman = CWallet::defaultConnman, CTxMemPool* mempool = CWallet::defaultMempool);
 
-    /* Stop staking BTPs */
+    /* Stop staking BPSs */
     void StopStake();
 
     static CConnman* defaultConnman;
