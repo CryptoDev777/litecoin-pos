@@ -253,7 +253,7 @@ def pe_read_libraries(filename) -> List[str]:
 def check_PE_libraries(filename) -> bool:
     ok = True
     for dylib in pe_read_libraries(filename):
-        if dylib not in PE_ALLOWED_LIBRARIES:
+        if dylib.upper() not in map(str.upper, PE_ALLOWED_LIBRARIES):
             print('{} is not in ALLOWED_LIBRARIES!'.format(dylib))
             ok = False
     return ok
