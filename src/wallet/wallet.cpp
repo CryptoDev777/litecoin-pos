@@ -3389,8 +3389,14 @@ bool CWallet::CreateCoinStake(unsigned int nBits, const CAmount& nTotalFees, uin
     }
     int64_t nCredit = 0;
     CScript scriptPubKeyKernel;
-    std::unique_ptr<SigningProvider> provider;
     CScript aggregateScriptPubKeyHashKernel;
+
+    LegacyScriptPubKeyMan* spk_man = GetLegacyScriptPubKeyMan();
+    if (!spk_man)
+    {
+        LogPrint(BCLog::COINSTAKE, "CreateCoinStake : failed to get signing provider\n");
+        return false;
+    }
 
     for(const std::pair<const CWalletTx*,unsigned int> &pcoin : setCoins)
     {
@@ -3407,11 +3413,6 @@ bool CWallet::CreateCoinStake(unsigned int nBits, const CAmount& nTotalFees, uin
             CScript scriptPubKeyOut;
             scriptPubKeyKernel = pcoin.first->tx->vout[pcoin.second].scriptPubKey;
             txnouttype whichType = Solver(scriptPubKeyKernel, vSolutions);
-            provider = this->GetSolvingProvider(scriptPubKeyKernel);
-            if (!provider) {
-                LogPrint(BCLog::COINSTAKE, "CreateCoinStake : failed to get signing provider\n");
-                break;
-            }
             if (whichType == TX_NONSTANDARD)
             {
                 LogPrint(BCLog::COINSTAKE, "CreateCoinStake : failed to parse kernel\n");
@@ -3428,7 +3429,7 @@ bool CWallet::CreateCoinStake(unsigned int nBits, const CAmount& nTotalFees, uin
                 // convert to pay to public key type
                 uint160 hash160(vSolutions[0]);
                 CKeyID pubKeyHash(hash160);
-                if (!provider->GetKey(pubKeyHash, key))
+                if (!spk_man->GetKey(pubKeyHash, key))
                 {
                     LogPrint(BCLog::COINSTAKE, "CreateCoinStake : failed to get key for kernel type=%d\n", whichType);
                     break;  // unable to find corresponding public key
@@ -3442,7 +3443,7 @@ bool CWallet::CreateCoinStake(unsigned int nBits, const CAmount& nTotalFees, uin
                 CPubKey pubKey(vchPubKey);
                 uint160 hash160(Hash160(vchPubKey));
                 CKeyID pubKeyHash(hash160);
-                if (!provider->GetKey(pubKeyHash, key))
+                if (!spk_man->GetKey(pubKeyHash, key))
                 {
                     LogPrint(BCLog::COINSTAKE, "CreateCoinStake : failed to get key for kernel type=%d\n", whichType);
                     break;  // unable to find corresponding public key
@@ -3552,7 +3553,7 @@ bool CWallet::CreateCoinStake(unsigned int nBits, const CAmount& nTotalFees, uin
     int nIn = 0;
     for(const CWalletTx* pcoin : vwtxPrev)
     {
-        if (!SignSignature(*provider, *pcoin->tx, txNew, nIn++, SIGHASH_ALL))
+        if (!SignSignature(*spk_man, *pcoin->tx, txNew, nIn++, SIGHASH_ALL))
             return error("CreateCoinStake : failed to sign coinstake");
     }
 
