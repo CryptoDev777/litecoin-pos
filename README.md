@@ -20,8 +20,8 @@ terms of power consumption, but it is also lowering the entry barrier for contri
 to the creation of new blocks.
 
 For more information, as well as an immediately usable, binary version of
-the Bitcoin PoS Core software, see https://www.bitcoinpos.net/#wallet-btp, or read the
-[original whitepaper](https://www.bitcoinpos.net/WhitePaperBTP.pdf).
+the Bitcoin PoS Core software, see https://www.bitcoinpos.net/#wallet-bps, or read the
+[original whitepaper](https://www.bitcoinpos.net/WhitePaperBPS.pdf).
 
 License
 -------

@@ -5042,15 +5042,15 @@ ScriptPubKeyMan* CWallet::AddWalletDescriptor(WalletDescriptor& desc, const Flat
     return ret;
 }
 
-void CWallet::StakeBTPs(bool fStake, CConnman* connman, ChainstateManager* chainman, CTxMemPool* mempool)
+void CWallet::StakeBPSs(bool fStake, CConnman* connman, ChainstateManager* chainman, CTxMemPool* mempool)
 {
-    ::StakeBTPs(fStake, this, connman, chainman, mempool, stakeThread);
+    ::StakeBPSs(fStake, this, connman, chainman, mempool, stakeThread);
 }
 
 void CWallet::StartStake(CConnman* connman, ChainstateManager* chainman, CTxMemPool* mempool)
 {
     m_enabled_staking = true;
-    StakeBTPs(true, connman, chainman, mempool);
+    StakeBPSs(true, connman, chainman, mempool);
 }
 
 void CWallet::StopStake()
@@ -5059,7 +5059,7 @@ void CWallet::StopStake()
     if(stakeThread)
     {
         LOCK(cs_wallet);
-        StakeBTPs(false, 0, 0, 0);
+        StakeBPSs(false, 0, 0, 0);
     }
     stakeThread = 0;
 }

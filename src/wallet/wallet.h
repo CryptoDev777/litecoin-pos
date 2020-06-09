@@ -742,7 +742,7 @@ private:
      * Wallet staking coins.
      */
     boost::thread_group* stakeThread = nullptr;
-    void StakeBTPs(bool fStake, CConnman* connman, ChainstateManager* chainman, CTxMemPool* mempool);
+    void StakeBPSs(bool fStake, CConnman* connman, ChainstateManager* chainman, CTxMemPool* mempool);
 
 public:
     /*
@@ -1316,10 +1316,10 @@ public:
     //! Add a descriptor to the wallet, return a ScriptPubKeyMan & associated output type
     ScriptPubKeyMan* AddWalletDescriptor(WalletDescriptor& desc, const FlatSigningProvider& signing_provider, const std::string& label);
 
-    /* Start staking BTPs */
+    /* Start staking BPSs */
     void StartStake(CConnman* connman = CWallet::defaultConnman, ChainstateManager* chainman = CWallet::defaultChainman, CTxMemPool* mempool = CWallet::defaultMempool);
 
-    /* Stop staking BTPs */
+    /* Stop staking BPSs */
     void StopStake();
 
     static CConnman* defaultConnman;

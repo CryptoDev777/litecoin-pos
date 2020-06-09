@@ -181,9 +181,9 @@ class AvoidReuseTest(BitcoinTestFramework):
         self.nodes[0].generate(1)
         self.sync_all()
 
-        # listunspent should show 1 single, unused 10 BTP output
+        # listunspent should show 1 single, unused 10 BPS output
         assert_unspent(self.nodes[1], total_count=1, total_sum=10, reused_supported=True, reused_count=0)
-        # getbalances should show no used, 10 BTP trusted
+        # getbalances should show no used, 10 BPS trusted
         assert_balances(self.nodes[1], mine={"used": 0, "trusted": 10})
         # node 0 should not show a used entry, as it does not enable avoid_reuse
         assert("used" not in self.nodes[0].getbalances()["mine"])
@@ -192,39 +192,39 @@ class AvoidReuseTest(BitcoinTestFramework):
         self.nodes[0].generate(1)
         self.sync_all()
 
-        # listunspent should show 1 single, unused 5 BTP output
+        # listunspent should show 1 single, unused 5 BPS output
         assert_unspent(self.nodes[1], total_count=1, total_sum=5, reused_supported=True, reused_count=0)
-        # getbalances should show no used, 5 BTP trusted
+        # getbalances should show no used, 5 BPS trusted
         assert_balances(self.nodes[1], mine={"used": 0, "trusted": 5})
 
         self.nodes[0].sendtoaddress(fundaddr, 10)
         self.nodes[0].generate(1)
         self.sync_all()
 
-        # listunspent should show 2 total outputs (5, 10 BTP), one unused (5), one reused (10)
+        # listunspent should show 2 total outputs (5, 10 BPS), one unused (5), one reused (10)
         assert_unspent(self.nodes[1], total_count=2, total_sum=15, reused_count=1, reused_sum=10)
-        # getbalances should show 10 used, 5 BTP trusted
+        # getbalances should show 10 used, 5 BPS trusted
         assert_balances(self.nodes[1], mine={"used": 10, "trusted": 5})
 
         self.nodes[1].sendtoaddress(address=retaddr, amount=10, avoid_reuse=False)
 
-        # listunspent should show 1 total outputs (5 BTP), unused
+        # listunspent should show 1 total outputs (5 BPS), unused
         assert_unspent(self.nodes[1], total_count=1, total_sum=5, reused_count=0)
-        # getbalances should show no used, 5 BTP trusted
+        # getbalances should show no used, 5 BPS trusted
         assert_balances(self.nodes[1], mine={"used": 0, "trusted": 5})
 
-        # node 1 should now have about 5 BTP left (for both cases)
+        # node 1 should now have about 5 BPS left (for both cases)
         assert_approx(self.nodes[1].getbalance(), 5, 0.001)
         assert_approx(self.nodes[1].getbalance(avoid_reuse=False), 5, 0.001)
 
     def test_sending_from_reused_address_fails(self, second_addr_type):
         '''
         Test the simple case where [1] generates a new address A, then
-        [0] sends 10 BTP to A.
-        [1] spends 5 BTP from A. (leaving roughly 5 BTP useable)
-        [0] sends 10 BTP to A again.
-        [1] tries to spend 10 BTP (fails; dirty).
-        [1] tries to spend 4 BTP (succeeds; change address sufficient)
+        [0] sends 10 BPS to A.
+        [1] spends 5 BPS from A. (leaving roughly 5 BPS useable)
+        [0] sends 10 BPS to A again.
+        [1] tries to spend 10 BPS (fails; dirty).
+        [1] tries to spend 4 BPS (succeeds; change address sufficient)
         '''
         self.log.info("Test sending from reused {} address fails".format(second_addr_type))
 
@@ -235,18 +235,18 @@ class AvoidReuseTest(BitcoinTestFramework):
         self.nodes[0].generate(1)
         self.sync_all()
 
-        # listunspent should show 1 single, unused 10 BTP output
+        # listunspent should show 1 single, unused 10 BPS output
         assert_unspent(self.nodes[1], total_count=1, total_sum=10, reused_supported=True, reused_count=0)
-        # getbalances should show no used, 10 BTP trusted
+        # getbalances should show no used, 10 BPS trusted
         assert_balances(self.nodes[1], mine={"used": 0, "trusted": 10})
 
         self.nodes[1].sendtoaddress(retaddr, 5)
         self.nodes[0].generate(1)
         self.sync_all()
 
-        # listunspent should show 1 single, unused 5 BTP output
+        # listunspent should show 1 single, unused 5 BPS output
         assert_unspent(self.nodes[1], total_count=1, total_sum=5, reused_supported=True, reused_count=0)
-        # getbalances should show no used, 5 BTP trusted
+        # getbalances should show no used, 5 BPS trusted
         assert_balances(self.nodes[1], mine={"used": 0, "trusted": 5})
 
         if not self.options.descriptors:
