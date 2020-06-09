@@ -140,7 +140,7 @@ contrib/devtools/split-debug.sh
 db4/
 
 # clang-check
-*.plist
+#*.plist
 
 osx_volname
 dist/
