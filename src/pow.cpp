@@ -77,7 +77,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         } else {
             // Return the last non-special-min-difficulty-rules-block
             const CBlockIndex* pindex = pindexLast;
-            while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nTargetLimit)
+            while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval(pindex->nHeight) != 0 && pindex->nBits == nTargetLimit)
                 pindex = pindex->pprev;
             return pindex->nBits;
         }
@@ -98,15 +98,15 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
 
     // Limit adjustment step
     int64_t nTargetSpacing;
-    if (pindexLast && pindexLast->nHeight < 40000 * 3)
-        nTargetSpacing = 15;
+    if (pindexLast && pindexLast->nHeight < params.BPSRewardMatchHeight)
+        nTargetSpacing = STAKE_V1_TARGET_SPACING;
     else
         nTargetSpacing = params.nPowTargetSpacing;
     int64_t nActualSpacing = pindexLast->GetBlockTime() - nFirstBlockTime;
-    int64_t nInterval = params.DifficultyAdjustmentInterval();
+    int64_t nInterval = params.DifficultyAdjustmentInterval(pindexLast->nHeight + 1);
     
     // Retarget
-    const arith_uint256 bnTargetLimit = GetLimit(pindexLast ? pindexLast->nHeight+1 : 0, params, fProofOfStake);
+    const arith_uint256 bnTargetLimit = GetLimit(pindexLast->nHeight + 1, params, fProofOfStake);
     arith_uint256 bnNew;
     bnNew.SetCompact(pindexLast->nBits);
 

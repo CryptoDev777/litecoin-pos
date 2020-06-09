@@ -63,6 +63,15 @@ struct Params {
     /** Don't warn about unknown BIP 9 activations below this height.
      * This prevents us from warning about the CSV and segwit activations. */
     int MinBIP9WarningHeight;
+    /** The size of the step going towards reward matching - rewards from
+     * both chains, bitcoin and bitcoin pos are coming in sync with steps of this size. */
+    int BPSRewardMatchStep;
+    /** Block height at which BPSRewardMatch becomes active - rewards from
+     * both chains, bitcoin and bitcoin pos are in sync as of this height. */
+    int BPSRewardMatchHeight;
+    /** Block height at which BPSDiffAdj becomes active - difficulty adjustment
+     * formula is changed so that block times are more reliable. */
+    int BPSDiffAdjHeight;
     /**
      * Minimum blocks including miner confirmation of the total of 2016 blocks in a retargeting period,
      * (nPowTargetTimespan / nPowTargetSpacing) which is also used for BIP9 deployments.
@@ -77,7 +86,17 @@ struct Params {
     bool fPowNoRetargeting;
     int64_t nPowTargetSpacing;
     int64_t nPowTargetTimespan;
-    int64_t DifficultyAdjustmentInterval() const { return nPowTargetTimespan / nPowTargetSpacing; }
+    int64_t DifficultyAdjustmentInterval(const int height) const
+    {
+        int64_t targetTimeSpan;
+        if (height < BPSDiffAdjHeight) {
+            targetTimeSpan = nPowTargetSpacing;
+        } else {
+            targetTimeSpan = nPowTargetTimespan;
+        }
+
+        return targetTimeSpan / nPowTargetSpacing;
+    }
     uint256 nMinimumChainWork;
     uint256 defaultAssumeValid;
     /** Proof of stake parameters */
