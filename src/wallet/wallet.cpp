@@ -1033,6 +1033,7 @@ bool CWallet::AbandonTransaction(const uint256& hashTx)
     assert(it != mapWallet.end());
     CWalletTx& origtx = it->second;
     if (origtx.GetDepthInMainChain() != 0 || origtx.InMempool()) {
+        WalletLogPrintf("Transaction %s cannot be abandoned; DepthInMainChain %d, InMemPool %s\n", hashTx.ToString(), origtx.GetDepthInMainChain(), origtx.InMempool() ? "true":"false");
         return false;
     }
 
@@ -1130,10 +1131,13 @@ void CWallet::SyncTransaction(const CTransactionRef& ptx, CWalletTx::Confirmatio
 {
     if (confirm.hashBlock.IsNull() && confirm.nIndex == -1)
     {
-        // wallets need to refund inputs when disconnecting coinstake
         const CTransaction& tx = *ptx;
+        LogPrint(BCLog::COINSTAKE, "SyncTransaction: tx %s\n", tx.GetHash().ToString());
+
+        // wallets need to refund inputs when disconnecting coinstake
         if (tx.IsCoinStake() && IsFromMe(tx))
         {
+            LogPrint(BCLog::COINSTAKE, "SyncTransaction: disabling coinstake tx %s\n", tx.GetHash().ToString());
             DisableTransaction(tx);
             return;
         }
@@ -1812,8 +1816,9 @@ void CWallet::ReacceptWalletTransactions()
 
         if (nDepth == 0 && !wtx.isAbandoned()) {
             if (wtx.IsCoinBase() || wtx.IsCoinStake()) {
-                LogPrintf("Abandoning wtx %s\n", wtx.GetHash().ToString());
-                AbandonTransaction(wtxid);
+                LogPrint(BCLog::COINSTAKE, "Abandoning coinbase/coinstake wtx %s\n", wtx.GetHash().ToString());
+                if (!AbandonTransaction(wtxid))
+                    LogPrint(BCLog::COINSTAKE, "Failed to abandon tx %s\n", wtx.GetHash().ToString());
             } else {
                 mapSorted.insert(std::make_pair(wtx.nOrderPos, &wtx));
             }
@@ -3984,6 +3989,9 @@ void CWallet::DisableTransaction(const CTransaction &tx)
         return; // only disconnecting coinstake requires marking input unspent
 
     uint256 hash = tx.GetHash();
+
+    LogPrint(BCLog::COINSTAKE, "Abandoning coinstake tx %s\n", hash.ToString());
+
     if (AbandonTransaction(hash))
     {
         LOCK(cs_wallet);
@@ -3998,6 +4006,8 @@ void CWallet::DisableTransaction(const CTransaction &tx)
         CWalletTx& wtx = mapWallet.at(hash);
         wtx.BindWallet(this);
         NotifyTransactionChanged(this, hash, CT_DELETED);
+    } else {
+        LogPrint(BCLog::COINSTAKE, "Failed to abandon coinstake tx %s\n", hash.ToString());
     }
 }
 
