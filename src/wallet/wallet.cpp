@@ -1068,6 +1068,9 @@ bool CWallet::AbandonTransaction(const uint256& hashTx)
             // If a transaction changes 'conflicted' state, that changes the balance
             // available of the outputs it spends. So force those to be recomputed
             MarkInputsDirty(wtx.tx);
+            WalletLogPrintf("Transaction %s abandoned\n", hashTx.ToString());
+        } else {
+            WalletLogPrintf("Transaction %s cannot be abandoned; DepthInMainChain %d, IsAbandoned %s\n", currentconfirm, wtx.isAbandoned() ? "true":"false");
         }
     }
 
