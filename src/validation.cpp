@@ -2740,6 +2740,7 @@ bool CChainState::DisconnectTip(BlockValidationState& state, const CChainParams&
     // Read block from disk.
     std::shared_ptr<CBlock> pblock = std::make_shared<CBlock>();
     CBlock& block = *pblock;
+    LogPrint(BCLog::COINSTAKE, "%s: disconnecting block %s\n", __func__, block.GetHash().ToString());
     if (!ReadBlockFromDisk(block, pindexDelete, chainparams.GetConsensus()))
         return error("DisconnectTip(): Failed to read block");
     // Apply the block atomically to the chain state.

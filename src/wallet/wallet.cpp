@@ -1192,6 +1192,8 @@ void CWallet::blockDisconnected(const CBlock& block, int height)
     auto locked_chain = chain().lock();
     LOCK(cs_wallet);
 
+    LogPrint(BCLog::COINSTAKE, "%s: disconnected block %s at height %d\n", __func__, block.GetHash().ToString(), height);
+
     // At block disconnection, this will change an abandoned transaction to
     // be unconfirmed, whether or not the transaction is added back to the mempool.
     // User may have to call abandontransaction again. It may be addressed in the
