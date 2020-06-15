@@ -65,7 +65,7 @@ public:
         consensus.MinBIP9WarningHeight = consensus.SegwitHeight + consensus.nMinerConfirmationWindow;
         consensus.BPSRewardMatchStep = 40000;
         consensus.BPSRewardMatchHeight = 3 * consensus.BPSRewardMatchStep;
-        consensus.BPSDiffAdjHeight = 150000;
+        consensus.BPSDiffAdjHeight = 130000;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 10 * 3 * 60; // every 10 blocks
