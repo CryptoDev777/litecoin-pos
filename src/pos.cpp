@@ -78,9 +78,8 @@ bool CheckStakeKernelHash(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t 
     ss << blockFromTime << prevout.hash << prevout.n << nTimeBlock;
     hashProofOfStake = Hash(ss.begin(), ss.end());
 
-    if (fPrintProofOfStake)
-    {
-        LogPrintf("CheckStakeKernelHash() : check modifier=%s nTimeBlockFrom=%u nPrevout=%u nTimeBlock=%u hashProof=%s\n",
+    if (fPrintProofOfStake) {
+        LogPrint(BCLog::COINSTAKE, "CheckStakeKernelHash() : check modifier=%s nTimeBlockFrom=%u nPrevout=%u nTimeBlock=%u hashProof=%s\n",
             nStakeModifier.GetHex().c_str(),
             blockFromTime, prevout.n, nTimeBlock,
             hashProofOfStake.ToString());
@@ -89,14 +88,6 @@ bool CheckStakeKernelHash(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t 
     // Now check if proof-of-stake hash meets target protocol
     if (UintToArith256(hashProofOfStake) > bnTarget)
         return false;
-
-    if (LogInstance().WillLogCategory(BCLog::COINSTAKE) && !fPrintProofOfStake)
-    {
-        LogPrintf("CheckStakeKernelHash() : check modifier=%s nTimeBlockFrom=%u nPrevout=%u nTimeBlock=%u hashProof=%s\n",
-            nStakeModifier.GetHex().c_str(),
-            blockFromTime, prevout.n, nTimeBlock,
-            hashProofOfStake.ToString());
-    }
 
     return true;
 }
@@ -130,7 +121,7 @@ bool CheckProofOfStake(CBlockIndex* pindexPrev, BlockValidationState& state, con
         return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-stake-signature-verify", 
                             strprintf("CheckProofOfStake() : VerifySignature failed on coinstake %s", tx.GetHash().ToString()));
 
-    if (!CheckStakeKernelHash(pindexPrev, nBits, blockFrom->nTime, coinPrev.out.nValue, txin.prevout, nTimeBlock, hashProofOfStake, targetProofOfStake, LogInstance().WillLogCategory(BCLog::COINSTAKE)))
+    if (!CheckStakeKernelHash(pindexPrev, nBits, blockFrom->nTime, coinPrev.out.nValue, txin.prevout, nTimeBlock, hashProofOfStake, targetProofOfStake, true))
         // may occur during initial download or if behind on block chain sync
         return state.Invalid(BlockValidationResult::BLOCK_HEADER_SYNC, "bad-stake-kernel-check", 
                             strprintf("CheckProofOfStake() : INFO: check kernel failed on coinstake %s, hashProof=%s", tx.GetHash().ToString(), hashProofOfStake.ToString()));

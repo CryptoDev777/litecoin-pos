@@ -65,7 +65,7 @@ public:
         consensus.MinBIP9WarningHeight = consensus.SegwitHeight + consensus.nMinerConfirmationWindow;
         consensus.BPSRewardMatchStep = 40000;
         consensus.BPSRewardMatchHeight = 3 * consensus.BPSRewardMatchStep;
-        consensus.BPSDiffAdjHeight = 150000;
+        consensus.BPSDiffAdjHeight = 130000;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 10 * 3 * 60; // every 10 blocks
@@ -87,10 +87,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000001a530ee33db82"); //block 112802
+        consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000000025441d95cb16f423"); //block 128654
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x622a541f3292d61d8e6ee1d0288a98f8ec6fabbc25e14f7fa33540f1fa65b97a"); //block 112802
+        consensus.defaultAssumeValid = uint256S("0xb8a8fd8f3a8cbab7f1d2e5d431eab19610ec83d4f6e421f87fa238b1d91e2f92"); //block 128654
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -143,15 +143,16 @@ public:
                 { 0, uint256S("0x00000bcd2d9ccbb28606a8b2d962b97394f612bf6e021ce1d64d71cecb008029")},
                 { 50000, uint256S("0x9f1a7b15917cbe23bb5dff82e60da8147820c58dea65793be72506c8e6d22b23")},
                 { 87231, uint256S("0xb0836f48bbcf0e675e9957bdc9a73acee32acb50eb6380719d5348df5509ba02")},
-                { 112802,uint256S("0x622a541f3292d61d8e6ee1d0288a98f8ec6fabbc25e14f7fa33540f1fa65b97a")}
+                { 112802,uint256S("0x622a541f3292d61d8e6ee1d0288a98f8ec6fabbc25e14f7fa33540f1fa65b97a")},
+                { 128654,uint256S("0xb8a8fd8f3a8cbab7f1d2e5d431eab19610ec83d4f6e421f87fa238b1d91e2f92")}
             }
         };
 
         chainTxData = ChainTxData{
-            // Data from RPC: getchaintxstats 112801 622a541f3292d61d8e6ee1d0288a98f8ec6fabbc25e14f7fa33540f1fa65b97a
-            /* nTime    */ 1590610288,
-            /* nTxCount */ 235300,
-            /* dTxRate  */ 0.1091065598453151,
+            // Data from RPC: getchaintxstats 128653 b8a8fd8f3a8cbab7f1d2e5d431eab19610ec83d4f6e421f87fa238b1d91e2f92
+            /* nTime    */ 1592298384,
+            /* nTxCount */ 269970,
+            /* dTxRate  */ 0.06961917921120889,
         };
     }
 };

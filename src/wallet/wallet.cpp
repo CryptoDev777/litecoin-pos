@@ -1043,6 +1043,7 @@ bool CWallet::AbandonTransaction(const uint256& hashTx)
     assert(it != mapWallet.end());
     CWalletTx& origtx = it->second;
     if (origtx.GetDepthInMainChain() != 0 || origtx.InMempool()) {
+        WalletLogPrintf("Transaction %s cannot be abandoned; DepthInMainChain %d, InMemPool %s\n", hashTx.ToString(), origtx.GetDepthInMainChain(), origtx.InMempool() ? "true":"false");
         return false;
     }
 
@@ -1077,6 +1078,9 @@ bool CWallet::AbandonTransaction(const uint256& hashTx)
             // If a transaction changes 'conflicted' state, that changes the balance
             // available of the outputs it spends. So force those to be recomputed
             MarkInputsDirty(wtx.tx);
+            WalletLogPrintf("Transaction %s abandoned\n", hashTx.ToString());
+        } else {
+            WalletLogPrintf("Transaction %s cannot be abandoned; DepthInMainChain %d, IsAbandoned %s\n", currentconfirm, wtx.isAbandoned() ? "true":"false");
         }
     }
 
@@ -1139,10 +1143,13 @@ void CWallet::SyncTransaction(const CTransactionRef& ptx, CWalletTx::Confirmatio
 {
     if (confirm.hashBlock.IsNull() && confirm.nIndex == -1)
     {
-        // wallets need to refund inputs when disconnecting coinstake
         const CTransaction& tx = *ptx;
+        LogPrint(BCLog::COINSTAKE, "SyncTransaction: tx %s\n", tx.GetHash().ToString());
+
+        // wallets need to refund inputs when disconnecting coinstake
         if (tx.IsCoinStake() && IsFromMe(tx))
         {
+            LogPrint(BCLog::COINSTAKE, "SyncTransaction: disabling coinstake tx %s\n", tx.GetHash().ToString());
             DisableTransaction(tx);
             return;
         }
@@ -1221,6 +1228,8 @@ void CWallet::blockConnected(const CBlock& block, int height)
 void CWallet::blockDisconnected(const CBlock& block, int height)
 {
     LOCK(cs_wallet);
+
+    LogPrint(BCLog::COINSTAKE, "%s: disconnected block %s at height %d\n", __func__, block.GetHash().ToString(), height);
 
     // At block disconnection, this will change an abandoned transaction to
     // be unconfirmed, whether or not the transaction is added back to the mempool.
@@ -1835,8 +1844,9 @@ void CWallet::ReacceptWalletTransactions()
 
         if (nDepth == 0 && !wtx.isAbandoned()) {
             if (wtx.IsCoinBase() || wtx.IsCoinStake()) {
-                LogPrintf("Abandoning wtx %s\n", wtx.GetHash().ToString());
-                AbandonTransaction(wtxid);
+                LogPrint(BCLog::COINSTAKE, "Abandoning coinbase/coinstake wtx %s\n", wtx.GetHash().ToString());
+                if (!AbandonTransaction(wtxid))
+                    LogPrint(BCLog::COINSTAKE, "Failed to abandon tx %s\n", wtx.GetHash().ToString());
             } else {
                 mapSorted.insert(std::make_pair(wtx.nOrderPos, &wtx));
             }
@@ -3933,6 +3943,9 @@ void CWallet::DisableTransaction(const CTransaction &tx)
         return; // only disconnecting coinstake requires marking input unspent
 
     uint256 hash = tx.GetHash();
+
+    LogPrint(BCLog::COINSTAKE, "Abandoning coinstake tx %s\n", hash.ToString());
+
     if (AbandonTransaction(hash))
     {
         LOCK(cs_wallet);
@@ -3947,6 +3960,8 @@ void CWallet::DisableTransaction(const CTransaction &tx)
         CWalletTx& wtx = mapWallet.at(hash);
         wtx.MarkDirty();
         NotifyTransactionChanged(this, hash, CT_DELETED);
+    } else {
+        LogPrint(BCLog::COINSTAKE, "Failed to abandon coinstake tx %s\n", hash.ToString());
     }
 }
 
@@ -4652,7 +4667,8 @@ int CWalletTx::GetBlocksToMaturity() const
     if (!(IsCoinBase() || IsCoinStake()))
         return 0;
     int chain_depth = GetDepthInMainChain();
-    assert(chain_depth >= 0); // coinbase tx should not be conflicted
+    //BPSTODO Some wallets are still not abandoning coinstakes correctly
+    //assert(chain_depth >= 0); // coinbase tx should not be conflicted
     return std::max(0, (COINBASE_MATURITY+1) - chain_depth);
 }
 
