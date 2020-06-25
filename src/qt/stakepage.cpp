@@ -90,10 +90,10 @@ void StakePage::setBalance(const interfaces::WalletBalances& balances)
 {
     int unit = walletModel->getOptionsModel()->getDisplayUnit();
     m_balances = balances;
-    ui->labelAssets->setText(BitcoinUnits::formatWithUnit(unit, balances.stakeable, false, BitcoinUnits::separatorAlways));
-    ui->labelAssetsImmature->setText(BitcoinUnits::formatWithUnit(unit, balances.immature_stakeable, false, BitcoinUnits::separatorAlways));
+    ui->labelAssets->setText(BitcoinUnits::formatWithUnit(unit, balances.stakeable, false, BitcoinUnits::SeparatorStyle::ALWAYS));
+    ui->labelAssetsImmature->setText(BitcoinUnits::formatWithUnit(unit, balances.immature_stakeable, false, BitcoinUnits::SeparatorStyle::ALWAYS));
     ui->labelAssetsImmature->setVisible(balances.immature_stakeable != 0);
-    ui->labelStake->setText(BitcoinUnits::formatWithUnit(unit, balances.stake, false, BitcoinUnits::separatorAlways));
+    ui->labelStake->setText(BitcoinUnits::formatWithUnit(unit, balances.stake, false, BitcoinUnits::SeparatorStyle::ALWAYS));
 }
 
 void StakePage::on_checkStake_clicked(bool checked)
@@ -135,7 +135,7 @@ void StakePage::numBlocksChanged(int count, const QDateTime &, double, bool head
 void StakePage::updateSubsidy()
 {
     int unit = walletModel->getOptionsModel()->getDisplayUnit();
-    QString strSubsidy = BitcoinUnits::formatWithUnit(unit, m_subsidy, false, BitcoinUnits::separatorAlways) + "/Block";
+    QString strSubsidy = BitcoinUnits::formatWithUnit(unit, m_subsidy, false, BitcoinUnits::SeparatorStyle::ALWAYS) + "/Block";
     ui->labelReward->setText(strSubsidy);
 }
 

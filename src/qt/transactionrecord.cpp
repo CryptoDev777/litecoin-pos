@@ -50,7 +50,6 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const interface
             if(mine)
             {
                 TransactionRecord sub(hash, nTime);
-                CTxDestination address;
                 if(wtx.is_coinstake) // Combine into single output for coinstake
                 {
                     sub.idx = 1; // vout index

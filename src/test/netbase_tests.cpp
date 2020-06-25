@@ -6,6 +6,7 @@
 #include <netbase.h>
 #include <test/util/setup_common.h>
 #include <util/strencodings.h>
+#include <util/translation.h>
 
 #include <string>
 
@@ -159,6 +160,9 @@ BOOST_AUTO_TEST_CASE(subnet_test)
     BOOST_CHECK(ResolveSubNet("1.2.2.20/26").Match(ResolveIP("1.2.2.63")));
     // All-Matching IPv6 Matches arbitrary IPv4 and IPv6
     BOOST_CHECK(ResolveSubNet("::/0").Match(ResolveIP("1:2:3:4:5:6:7:1234")));
+    // But not `::` or `0.0.0.0` because they are considered invalid addresses
+    BOOST_CHECK(!ResolveSubNet("::/0").Match(ResolveIP("::")));
+    BOOST_CHECK(!ResolveSubNet("::/0").Match(ResolveIP("0.0.0.0")));
     BOOST_CHECK(ResolveSubNet("::/0").Match(ResolveIP("1.2.3.4")));
     // All-Matching IPv4 does not Match IPv6
     BOOST_CHECK(!ResolveSubNet("0.0.0.0/0").Match(ResolveIP("1:2:3:4:5:6:7:1234")));
@@ -325,15 +329,15 @@ BOOST_AUTO_TEST_CASE(netbase_parsenetwork)
 
 BOOST_AUTO_TEST_CASE(netpermissions_test)
 {
-    std::string error;
+    bilingual_str error;
     NetWhitebindPermissions whitebindPermissions;
     NetWhitelistPermissions whitelistPermissions;
 
     // Detect invalid white bind
     BOOST_CHECK(!NetWhitebindPermissions::TryParse("", whitebindPermissions, error));
-    BOOST_CHECK(error.find("Cannot resolve -whitebind address") != std::string::npos);
+    BOOST_CHECK(error.original.find("Cannot resolve -whitebind address") != std::string::npos);
     BOOST_CHECK(!NetWhitebindPermissions::TryParse("127.0.0.1", whitebindPermissions, error));
-    BOOST_CHECK(error.find("Need to specify a port with -whitebind") != std::string::npos);
+    BOOST_CHECK(error.original.find("Need to specify a port with -whitebind") != std::string::npos);
     BOOST_CHECK(!NetWhitebindPermissions::TryParse("", whitebindPermissions, error));
 
     // If no permission flags, assume backward compatibility
@@ -377,11 +381,11 @@ BOOST_AUTO_TEST_CASE(netpermissions_test)
 
     // Detect invalid flag
     BOOST_CHECK(!NetWhitebindPermissions::TryParse("bloom,forcerelay,oopsie@1.2.3.4:32", whitebindPermissions, error));
-    BOOST_CHECK(error.find("Invalid P2P permission") != std::string::npos);
+    BOOST_CHECK(error.original.find("Invalid P2P permission") != std::string::npos);
 
     // Check whitelist error
     BOOST_CHECK(!NetWhitelistPermissions::TryParse("bloom,forcerelay,noban@1.2.3.4:32", whitelistPermissions, error));
-    BOOST_CHECK(error.find("Invalid netmask specified in -whitelist") != std::string::npos);
+    BOOST_CHECK(error.original.find("Invalid netmask specified in -whitelist") != std::string::npos);
 
     // Happy path for whitelist parsing
     BOOST_CHECK(NetWhitelistPermissions::TryParse("noban@1.2.3.4", whitelistPermissions, error));

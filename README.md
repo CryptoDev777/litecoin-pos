@@ -32,9 +32,9 @@ information or see https://opensource.org/licenses/MIT.
 Development Process
 -------------------
 
-The `master` branch is regularly built (see doc/build-*.md for instructions) and tested, but is not guaranteed to be
+The `master` branch is regularly built (see `doc/build-*.md` for instructions) and tested, but it is not guaranteed to be
 completely stable. [Tags](https://github.com/bitcoin-pos/bitcoin-pos/tags) are created
-regularly to indicate new official, stable release versions of Bitcoin PoS Core.
+regularly from release branches to indicate new official, stable release versions of Bitcoin PoS Core.
 
 The contribution workflow is described in [CONTRIBUTING.md](CONTRIBUTING.md)
 and useful hints for developers can be found in [doc/developer-notes.md](doc/developer-notes.md).

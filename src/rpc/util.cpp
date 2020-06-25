@@ -10,6 +10,7 @@
 #include <tinyformat.h>
 #include <util/strencodings.h>
 #include <util/string.h>
+#include <util/translation.h>
 
 #include <tuple>
 
@@ -223,7 +224,7 @@ public:
         obj.pushKV("isscript", false);
         obj.pushKV("iswitness", true);
         obj.pushKV("witness_version", 0);
-        obj.pushKV("witness_program", HexStr(id.begin(), id.end()));
+        obj.pushKV("witness_program", HexStr(id));
         return obj;
     }
 
@@ -233,7 +234,7 @@ public:
         obj.pushKV("isscript", true);
         obj.pushKV("iswitness", true);
         obj.pushKV("witness_version", 0);
-        obj.pushKV("witness_program", HexStr(id.begin(), id.end()));
+        obj.pushKV("witness_program", HexStr(id));
         return obj;
     }
 
@@ -285,7 +286,7 @@ UniValue JSONRPCTransactionError(TransactionError terr, const std::string& err_s
     if (err_string.length() > 0) {
         return JSONRPCError(RPCErrorFromTransactionError(terr), err_string);
     } else {
-        return JSONRPCError(RPCErrorFromTransactionError(terr), TransactionErrorString(terr));
+        return JSONRPCError(RPCErrorFromTransactionError(terr), TransactionErrorString(terr).original);
     }
 }
 

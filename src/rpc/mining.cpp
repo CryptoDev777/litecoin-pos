@@ -17,6 +17,7 @@
 #include <policy/fees.h>
 #include <pow.h>
 #include <rpc/blockchain.h>
+#include <rpc/mining.h>
 #include <rpc/server.h>
 #include <rpc/util.h>
 #include <script/descriptor.h>
@@ -29,6 +30,7 @@
 #include <util/strencodings.h>
 #include <util/string.h>
 #include <util/system.h>
+#include <util/translation.h>
 #include <validation.h>
 #include <validationinterface.h>
 #include <versionbitsinfo.h>
@@ -216,7 +218,7 @@ static UniValue generatetodescriptor(const JSONRPCRequest& request)
         {
             {"num_blocks", RPCArg::Type::NUM, RPCArg::Optional::NO, "How many blocks are generated immediately."},
             {"descriptor", RPCArg::Type::STR, RPCArg::Optional::NO, "The descriptor to send the newly generated bitcoin to."},
-            {"maxtries", RPCArg::Type::NUM, /* default */ "1000000", "How many iterations to try."},
+            {"maxtries", RPCArg::Type::NUM, /* default */ ToString(DEFAULT_MAX_TRIES), "How many iterations to try."},
         },
         RPCResult{
             RPCResult::Type::ARR, "", "hashes of blocks generated",
@@ -230,7 +232,7 @@ static UniValue generatetodescriptor(const JSONRPCRequest& request)
         .Check(request);
 
     const int num_blocks{request.params[0].get_int()};
-    const int64_t max_tries{request.params[2].isNull() ? 1000000 : request.params[2].get_int()};
+    const uint64_t max_tries{request.params[2].isNull() ? DEFAULT_MAX_TRIES : request.params[2].get_int()};
 
     CScript coinbase_script;
     std::string error;
@@ -251,7 +253,7 @@ static UniValue generatetoaddress(const JSONRPCRequest& request)
                 {
                     {"nblocks", RPCArg::Type::NUM, RPCArg::Optional::NO, "How many blocks are generated immediately."},
                     {"address", RPCArg::Type::STR, RPCArg::Optional::NO, "The address to send the newly generated bitcoin to."},
-                    {"maxtries", RPCArg::Type::NUM, /* default */ "1000000", "How many iterations to try."},
+                    {"maxtries", RPCArg::Type::NUM, /* default */ ToString(DEFAULT_MAX_TRIES), "How many iterations to try."},
                 },
                 RPCResult{
                     RPCResult::Type::ARR, "", "hashes of blocks generated",
@@ -261,16 +263,13 @@ static UniValue generatetoaddress(const JSONRPCRequest& request)
                 RPCExamples{
             "\nGenerate 11 blocks to myaddress\n"
             + HelpExampleCli("generatetoaddress", "11 \"myaddress\"")
-            + "If you are running the bitcoin core wallet, you can get a new address to send the newly generated bitcoin to with:\n"
+            + "If you are using the " PACKAGE_NAME " wallet, you can get a new address to send the newly generated bitcoin to with:\n"
             + HelpExampleCli("getnewaddress", "")
                 },
             }.Check(request);
 
-    int nGenerate = request.params[0].get_int();
-    uint64_t nMaxTries = 1000000;
-    if (!request.params[2].isNull()) {
-        nMaxTries = request.params[2].get_int();
-    }
+    const int num_blocks{request.params[0].get_int()};
+    const uint64_t max_tries{request.params[2].isNull() ? DEFAULT_MAX_TRIES : request.params[2].get_int()};
 
     CTxDestination destination = DecodeDestination(request.params[1].get_str());
     if (!IsValidDestination(destination)) {
@@ -282,7 +281,7 @@ static UniValue generatetoaddress(const JSONRPCRequest& request)
 
     CScript coinbase_script = GetScriptForDestination(destination);
 
-    return generateBlocks(chainman, mempool, coinbase_script, nGenerate, nMaxTries);
+    return generateBlocks(chainman, mempool, coinbase_script, num_blocks, max_tries);
 }
 
 static UniValue generateblock(const JSONRPCRequest& request)
@@ -380,7 +379,7 @@ static UniValue generateblock(const JSONRPCRequest& request)
     }
 
     uint256 block_hash;
-    uint64_t max_tries{1000000};
+    uint64_t max_tries{DEFAULT_MAX_TRIES};
     unsigned int extra_nonce{0};
 
     if (!GenerateBlock(EnsureChainman(request.context), block, max_tries, extra_nonce, block_hash) || block_hash.IsNull()) {
@@ -446,7 +445,7 @@ static UniValue getmininginfo(const JSONRPCRequest& request)
     obj.pushKV("blockvalue",    (uint64_t)GetBlockSubsidy(::ChainActive().Height(), consensusParams));
     obj.pushKV("netmhashps",       GetPoWMHashPS());
     obj.pushKV("netstakeweight",   GetPoSKernelPS());
-    obj.pushKV("errors",           GetWarnings("statusbar"));
+    obj.pushKV("errors",           GetWarnings("statusbar").original);
     obj.pushKV("networkhashps",    getnetworkhashps(request));
     obj.pushKV("pooledtx",         (uint64_t)mempool.size());
     weight.pushKV("minimum",       (uint64_t)nWeight);
@@ -454,7 +453,7 @@ static UniValue getmininginfo(const JSONRPCRequest& request)
     weight.pushKV("combined",      (uint64_t)nWeight);
     obj.pushKV("stakeweight",      weight);
     obj.pushKV("chain",            Params().NetworkIDString());
-    obj.pushKV("warnings",         GetWarnings(false));
+    obj.pushKV("warnings",         GetWarnings(false).original);
     return obj;
 }
 
@@ -509,7 +508,7 @@ static UniValue getstakinginfo(const JSONRPCRequest& request)
 
     obj.pushKV("enabled", gArgs.GetBoolArg("-staking", true));
     obj.pushKV("staking", staking);
-    obj.pushKV("errors", GetWarnings("statusbar"));
+    obj.pushKV("errors", GetWarnings("statusbar").original);
 
     if (BlockAssembler::m_last_block_num_txs) obj.pushKV("currentblocktx", *BlockAssembler::m_last_block_num_txs);
     obj.pushKV("pooledtx", (uint64_t)mempool.size());
@@ -589,7 +588,7 @@ static UniValue getstakingstatus(const JSONRPCRequest& request)
     obj.pushKV("nodeconnections", hasConnections);
     obj.pushKV("nodesynced", isSynced);
     obj.pushKV("stakeablecoins", hasCoins);
-    obj.pushKV("errors", GetWarnings("statusbar"));
+    obj.pushKV("errors", GetWarnings("statusbar").original);
 
     return obj;
 }
@@ -1047,7 +1046,7 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
     result.pushKV("height", (int64_t)(pindexPrev->nHeight+1));
 
     if (!pblocktemplate->vchCoinbaseCommitment.empty()) {
-        result.pushKV("default_witness_commitment", HexStr(pblocktemplate->vchCoinbaseCommitment.begin(), pblocktemplate->vchCoinbaseCommitment.end()));
+        result.pushKV("default_witness_commitment", HexStr(pblocktemplate->vchCoinbaseCommitment));
     }
 
     return result;

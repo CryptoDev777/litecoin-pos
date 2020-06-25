@@ -140,6 +140,7 @@ private:
     QAction* signMessageAction = nullptr;
     QAction* verifyMessageAction = nullptr;
     QAction* m_load_psbt_action = nullptr;
+    QAction* m_load_psbt_clipboard_action = nullptr;
     QAction* aboutAction = nullptr;
     QAction* receiveCoinsAction = nullptr;
     QAction* receiveCoinsMenuAction = nullptr;
@@ -156,6 +157,7 @@ private:
     QAction* m_open_wallet_action{nullptr};
     QMenu* m_open_wallet_menu{nullptr};
     QAction* m_close_wallet_action{nullptr};
+    QAction* m_close_all_wallets_action{nullptr};
     QAction* m_wallet_selector_label_action = nullptr;
     QAction* m_wallet_selector_action = nullptr;
     QAction* m_mask_values_action{nullptr};
@@ -281,8 +283,8 @@ public Q_SLOTS:
     void gotoSignMessageTab(QString addr = "");
     /** Show Sign/Verify Message dialog and switch to verify message tab */
     void gotoVerifyMessageTab(QString addr = "");
-    /** Show load Partially Signed Bitcoin Transaction dialog */
-    void gotoLoadPSBT();
+    /** Load Partially Signed Bitcoin Transaction from file or clipboard */
+    void gotoLoadPSBT(bool from_clipboard = false);
 
     /** Show open dialog */
     void openClicked();

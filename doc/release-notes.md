@@ -31,6 +31,11 @@ wallet versions of Bitcoin Core are generally supported.
 Compatibility
 ==============
 
+During this release cycle, work has been done to ensure that the codebase is fully
+compatible with C++17. The intention is to begin using C++17 features starting
+with the 0.22.0 release. This means that a compiler that supports C++17 will be
+required to compile 0.22.0.
+
 Bitcoin Core is supported and extensively tested on operating systems
 using the Linux kernel, macOS 10.12+, and Windows 7 and newer.  Bitcoin
 Core should also work on most other Unix-like systems but is not as
@@ -79,6 +84,9 @@ Build System
 
 Updated settings
 ----------------
+
+- The `-debug=db` logging category, which was deprecated in 0.20 and replaced by
+  `-debug=walletdb` to distinguish it from `coindb`, has been removed. (#19202)
 
 Changes to Wallet or GUI related settings can be found in the GUI or Wallet  section below.
 

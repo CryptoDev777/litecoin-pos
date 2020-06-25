@@ -46,11 +46,11 @@ public:
         SAT
     };
 
-    enum SeparatorStyle
+    enum class SeparatorStyle
     {
-        separatorNever,
-        separatorStandard,
-        separatorAlways
+        NEVER,
+        STANDARD,
+        ALWAYS
     };
 
     //! @name Static API
@@ -72,11 +72,11 @@ public:
     //! Number of decimals left
     static int decimals(int unit);
     //! Format as string
-    static QString format(int unit, const CAmount& amount, bool plussign = false, SeparatorStyle separators = separatorStandard, bool justify = false);
+    static QString format(int unit, const CAmount& amount, bool plussign = false, SeparatorStyle separators = SeparatorStyle::STANDARD, bool justify = false);
     //! Format as string (with unit)
-    static QString formatWithUnit(int unit, const CAmount& amount, bool plussign=false, SeparatorStyle separators=separatorStandard);
+    static QString formatWithUnit(int unit, const CAmount& amount, bool plussign=false, SeparatorStyle separators=SeparatorStyle::STANDARD);
     //! Format as HTML string (with unit)
-    static QString formatHtmlWithUnit(int unit, const CAmount& amount, bool plussign=false, SeparatorStyle separators=separatorStandard);
+    static QString formatHtmlWithUnit(int unit, const CAmount& amount, bool plussign=false, SeparatorStyle separators=SeparatorStyle::STANDARD);
     //! Format as string (with unit) of fixed length to preserve privacy, if it is set.
     static QString formatWithPrivacy(int unit, const CAmount& amount, SeparatorStyle separators, bool privacy);
     //! Parse string to coin amount
@@ -84,7 +84,7 @@ public:
     //! Gets title for amount column including current display unit if optionsModel reference available */
     static QString getAmountColumnTitle(int unit);
     //! Format integer number as string (with and without separator)
-    static QString formatInt(const int64_t& number, bool plussign=false, SeparatorStyle separators=separatorStandard);
+    static QString formatInt(const int64_t& number, bool plussign=false, SeparatorStyle separators=SeparatorStyle::STANDARD);
     ///@}
 
     //! @name AbstractListModel implementation
