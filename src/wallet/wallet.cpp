@@ -1138,9 +1138,8 @@ void CWallet::SyncTransaction(const CTransactionRef& ptx, CWalletTx::Confirmatio
         LogPrint(BCLog::COINSTAKE, "SyncTransaction: tx %s\n", tx.GetHash().ToString());
 
         // wallets need to refund inputs when disconnecting coinstake
-        if (tx.IsCoinStake() && IsFromMe(tx))
-        {
-            LogPrint(BCLog::COINSTAKE, "SyncTransaction: disabling coinstake tx %s\n", tx.GetHash().ToString());
+        if (tx.IsCoinStake() && IsRelevantToMe_MPOS(tx)) {
+            LogPrint(BCLog::COINSTAKE, "%s: disabling coinstake tx %s\n", __func__, tx.GetHash().ToString());
             DisableTransaction(tx);
             return;
         }
@@ -1327,6 +1326,11 @@ bool CWallet::IsMine(const CTransaction& tx) const
         if (IsMine(txout))
             return true;
     return false;
+}
+
+bool CWallet::IsRelevantToMe_MPOS(const CTransaction& tx) const
+{
+    return (GetDebit(tx, ISMINE_ALL) > 0 || GetCredit(tx, ISMINE_ALL) > 0);
 }
 
 bool CWallet::IsFromMe(const CTransaction& tx) const
@@ -3990,10 +3994,11 @@ std::set<CTxDestination> CWallet::GetLabelAddresses(const std::string& label) co
 // disable transaction (only for coinstake)
 void CWallet::DisableTransaction(const CTransaction &tx)
 {
-    if (!tx.IsCoinStake() || !IsFromMe(tx))
+    if (!tx.IsCoinStake() || !IsRelevantToMe_MPOS(tx))
         return; // only disconnecting coinstake requires marking input unspent
 
     uint256 hash = tx.GetHash();
+    bool is_from_me = IsFromMe(tx);
 
     LogPrint(BCLog::COINSTAKE, "Abandoning coinstake tx %s\n", hash.ToString());
 
@@ -4001,12 +4006,16 @@ void CWallet::DisableTransaction(const CTransaction &tx)
     {
         LOCK(cs_wallet);
         RemoveFromSpends(hash);
-        std::set<CWalletTx*> setCoins;
-        for (const CTxIn& txin : tx.vin)
+        // If the stake was done by me, update the transaction vins from the wallet also
+        if (is_from_me)
         {
-            CWalletTx &coin = mapWallet.at(txin.prevout.hash);
-            coin.BindWallet(this);
-            NotifyTransactionChanged(this, coin.GetHash(), CT_UPDATED);
+            LogPrint(BCLog::COINSTAKE, "Reverting tx vins for %s\n", hash.ToString());
+            for (const CTxIn& txin : tx.vin)
+            {
+                CWalletTx &coin = mapWallet.at(txin.prevout.hash);
+                coin.BindWallet(this);
+                NotifyTransactionChanged(this, coin.GetHash(), CT_UPDATED);
+            }
         }
         CWalletTx& wtx = mapWallet.at(hash);
         wtx.BindWallet(this);
