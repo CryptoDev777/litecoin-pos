@@ -76,7 +76,6 @@ static const int64_t DEFAULT_MAX_TIP_AGE = 24 * 60 * 60;
 static const bool DEFAULT_CHECKPOINTS_ENABLED = true;
 static const bool DEFAULT_TXINDEX = false;
 static const char* const DEFAULT_BLOCKFILTERINDEX = "0";
-static const unsigned int DEFAULT_BANSCORE_THRESHOLD = 100;
 /** Default for -persistmempool */
 static const bool DEFAULT_PERSIST_MEMPOOL = true;
 /** Default for using fee filter */
@@ -820,7 +819,8 @@ public:
     std::vector<CChainState*> GetAll();
 
     //! The most-work chain.
-    CChain& ActiveChain() const;
+    CChainState& ActiveChainstate() const;
+    CChain& ActiveChain() const { return ActiveChainstate().m_chain; }
     int ActiveHeight() const { return ActiveChain().Height(); }
     CBlockIndex* ActiveTip() const { return ActiveChain().Tip(); }
 
@@ -865,7 +865,7 @@ public:
      * validationinterface callback.
      *
      * @param[in]   pblock  The block we want to process.
-     * @param[in]   fForceProcessing Process this block even if unrequested; used for non-network block sources and whitelisted peers.
+     * @param[in]   fForceProcessing Process this block even if unrequested; used for non-network block sources.
      * @param[out]  fNewBlock A boolean which is set to indicate if the block was first received via this call
      * @returns     If the block was processed, independently of block validity
      */
@@ -900,10 +900,10 @@ public:
 /** DEPRECATED! Please use node.chainman instead. May only be used in validation.cpp internally */
 extern ChainstateManager g_chainman GUARDED_BY(::cs_main);
 
-/** @returns the most-work valid chainstate. */
+/** Please prefer the identical ChainstateManager::ActiveChainstate */
 CChainState& ChainstateActive();
 
-/** @returns the most-work chain. */
+/** Please prefer the identical ChainstateManager::ActiveChain */
 CChain& ChainActive();
 
 /** @returns the global block index map. */

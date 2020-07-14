@@ -36,7 +36,7 @@
 #include <chainparams.h>
 #include <interfaces/handler.h>
 #include <interfaces/node.h>
-#include <ui_interface.h>
+#include <node/ui_interface.h>
 #include <util/system.h>
 #include <util/translation.h>
 #include <validation.h>
@@ -113,6 +113,8 @@ BitcoinGUI::BitcoinGUI(interfaces::Node& node, const PlatformStyle *_platformSty
         setCentralWidget(rpcConsole);
         Q_EMIT consoleShown(rpcConsole);
     }
+
+    modalOverlay = new ModalOverlay(enableWallet, this->centralWidget());
 
     // Accept D&D of URIs
     setAcceptDrops(true);
@@ -217,7 +219,6 @@ BitcoinGUI::BitcoinGUI(interfaces::Node& node, const PlatformStyle *_platformSty
         openOptionsDialogWithTab(OptionsDialog::TAB_NETWORK);
     });
 
-    modalOverlay = new ModalOverlay(enableWallet, this->centralWidget());
     connect(labelBlocksIcon, &GUIUtil::ClickableLabel::clicked, this, &BitcoinGUI::showModalOverlay);
     connect(progressBar, &GUIUtil::ClickableProgressBar::clicked, this, &BitcoinGUI::showModalOverlay);
 #ifdef ENABLE_WALLET
@@ -254,6 +255,7 @@ BitcoinGUI::~BitcoinGUI()
 void BitcoinGUI::createActions()
 {
     QActionGroup *tabGroup = new QActionGroup(this);
+    connect(modalOverlay, &ModalOverlay::triggered, tabGroup, &QActionGroup::setEnabled);
 
     overviewAction = new QAction(platformStyle->SingleColorIcon(":/icons/overview"), tr("&Overview"), this);
     overviewAction->setStatusTip(tr("Show general overview of wallet"));
@@ -709,6 +711,7 @@ void BitcoinGUI::removeWallet(WalletModel* walletModel)
     m_wallet_selector->removeItem(index);
     if (m_wallet_selector->count() == 0) {
         setWalletActionsEnabled(false);
+        overviewAction->setChecked(true);
     } else if (m_wallet_selector->count() == 1) {
         m_wallet_selector_label_action->setVisible(false);
         m_wallet_selector_action->setVisible(false);

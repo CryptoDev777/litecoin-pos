@@ -154,22 +154,22 @@ bool CheckBlockInputPubKeyMatchesOutputPubKey(const CBlock& block, CCoinsViewCac
 
     // If the input does not exactly match the output, it MUST be on P2PKH spent and P2PK out.
     CTxDestination inputAddress;
-    txnouttype inputTxType=TX_NONSTANDARD;
+    TxoutType inputTxType=TxoutType::NONSTANDARD;
     if(!ExtractDestination(coinIn.out.scriptPubKey, inputAddress, &inputTxType)) {
         return error("%s: Could not extract address from input", __func__);
     }
 
-    if(inputTxType != TX_PUBKEYHASH || inputAddress.type() != typeid(PKHash)) {
+    if(inputTxType != TxoutType::PUBKEYHASH || inputAddress.type() != typeid(PKHash)) {
         return error("%s: non-exact match input must be P2PKH", __func__);
     }
 
     CTxDestination outputAddress;
-    txnouttype outputTxType=TX_NONSTANDARD;
+    TxoutType outputTxType=TxoutType::NONSTANDARD;
     if(!ExtractDestination(txout.scriptPubKey, outputAddress, &outputTxType)) {
         return error("%s: Could not extract address from output", __func__);
     }
 
-    if(outputTxType != TX_PUBKEY || outputAddress.type() != typeid(PKHash)) {
+    if(outputTxType != TxoutType::PUBKEY || outputAddress.type() != typeid(PKHash)) {
         return error("%s: non-exact match output must be P2PK", __func__);
     }
 
@@ -202,9 +202,9 @@ bool CheckRecoveredPubKeyFromBlockSignature(CBlockIndex* pindexPrev, const CBloc
             }
 
             CTxDestination address;
-            txnouttype txType=TX_NONSTANDARD;
+            TxoutType txType=TxoutType::NONSTANDARD;
             if(ExtractDestination(coinPrev.out.scriptPubKey, address, &txType)){
-                if ((txType == TX_PUBKEY || txType == TX_PUBKEYHASH) && address.type() == typeid(PKHash)) {
+                if ((txType == TxoutType::PUBKEY || txType == TxoutType::PUBKEYHASH) && address.type() == typeid(PKHash)) {
                     if(PKHash(pubkey.GetID()) == boost::get<PKHash>(address)) {
                         return true;
                     }
