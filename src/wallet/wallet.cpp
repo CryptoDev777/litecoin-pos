@@ -1070,7 +1070,7 @@ bool CWallet::AbandonTransaction(const uint256& hashTx)
             MarkInputsDirty(wtx.tx);
             WalletLogPrintf("Transaction %s abandoned\n", hashTx.ToString());
         } else {
-            WalletLogPrintf("Transaction %s cannot be abandoned; DepthInMainChain %d, IsAbandoned %s\n", currentconfirm, wtx.isAbandoned() ? "true":"false");
+            WalletLogPrintf("Transaction %s cannot be abandoned; DepthInMainChain %d, IsAbandoned %s\n", hashTx.ToString(), currentconfirm, wtx.isAbandoned() ? "true":"false");
         }
     }
 
