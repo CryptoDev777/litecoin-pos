@@ -28,7 +28,7 @@
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>BitcoinGUI</name>
+    <name>LitecoinPoSGUI</name>
     <message>
         <source>&amp;Transactions</source>
         <translation>&amp;Транзакциялар</translation>
@@ -103,8 +103,8 @@
 <context>
     <name>Intro</name>
     <message>
-        <source>Bitcoin</source>
-        <translation>Bitcoin</translation>
+        <source>LitecoinPoS</source>
+        <translation>LitecoinPoS</translation>
     </message>
     <message>
         <source>Error</source>
@@ -337,6 +337,6 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>bitcoin-core</name>
+    <name>litecoin-pos-core</name>
     </context>
 </TS>

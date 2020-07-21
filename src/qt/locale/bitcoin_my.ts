@@ -48,7 +48,7 @@
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>BitcoinGUI</name>
+    <name>LitecoinPoSGUI</name>
     </context>
 <context>
     <name>CoinControlDialog</name>
@@ -161,6 +161,6 @@
     </message>
     </context>
 <context>
-    <name>bitcoin-core</name>
+    <name>litecoin-pos-core</name>
     </context>
 </TS>

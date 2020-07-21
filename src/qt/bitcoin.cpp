@@ -169,7 +169,7 @@ void BitcoinCore::shutdown()
 }
 
 static int qt_argc = 1;
-static const char* qt_argv = "bitcoin-pos-qt";
+static const char* qt_argv = "litecoin-pos-qt";
 
 BitcoinApplication::BitcoinApplication(interfaces::Node& node):
     QApplication(qt_argc, const_cast<char **>(&qt_argv)),

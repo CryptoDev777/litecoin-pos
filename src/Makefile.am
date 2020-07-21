@@ -82,18 +82,18 @@ TESTS =
 BENCHMARKS =
 
 if BUILD_BITCOIND
-  bin_PROGRAMS += bitcoin-posd
+  bin_PROGRAMS += litecoin-posd
 endif
 
 if BUILD_BITCOIN_CLI
-  bin_PROGRAMS += bitcoin-pos-cli
+  bin_PROGRAMS += litecoin-pos-cli
 endif
 if BUILD_BITCOIN_TX
-  bin_PROGRAMS += bitcoin-pos-tx
+  bin_PROGRAMS += litecoin-pos-tx
 endif
 if ENABLE_WALLET
 if BUILD_BITCOIN_WALLET
-  bin_PROGRAMS += bitcoin-pos-wallet
+  bin_PROGRAMS += litecoin-pos-wallet
 endif
 endif
 
@@ -548,16 +548,16 @@ nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
 # bitcoind binary #
-bitcoin_posd_SOURCES = bitcoind.cpp
-bitcoin_posd_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-bitcoin_posd_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-bitcoin_posd_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+litecoin_posd_SOURCES = bitcoind.cpp
+litecoin_posd_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+litecoin_posd_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+litecoin_posd_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-bitcoin_posd_SOURCES += bitcoind-res.rc
+litecoin_posd_SOURCES += bitcoind-res.rc
 endif
 
-bitcoin_posd_LDADD = \
+litecoin_posd_LDADD = \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_COMMON) \
@@ -571,38 +571,38 @@ bitcoin_posd_LDADD = \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-bitcoin_posd_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
+litecoin_posd_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
 
 # bitcoin-cli binary #
-bitcoin_pos_cli_SOURCES = bitcoin-cli.cpp
-bitcoin_pos_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
-bitcoin_pos_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-bitcoin_pos_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+litecoin_pos_cli_SOURCES = bitcoin-cli.cpp
+litecoin_pos_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
+litecoin_pos_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+litecoin_pos_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-bitcoin_pos_cli_SOURCES += bitcoin-cli-res.rc
+litecoin_pos_cli_SOURCES += bitcoin-cli-res.rc
 endif
 
-bitcoin_pos_cli_LDADD = \
+litecoin_pos_cli_LDADD = \
   $(LIBBITCOIN_CLI) \
   $(LIBUNIVALUE) \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CRYPTO)
 
-bitcoin_pos_cli_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
+litecoin_pos_cli_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
 #
 
 # bitcoin-tx binary #
-bitcoin_pos_tx_SOURCES = bitcoin-tx.cpp
-bitcoin_pos_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-bitcoin_pos_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-bitcoin_pos_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+litecoin_pos_tx_SOURCES = bitcoin-tx.cpp
+litecoin_pos_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+litecoin_pos_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+litecoin_pos_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-bitcoin_pos_tx_SOURCES += bitcoin-tx-res.rc
+litecoin_pos_tx_SOURCES += bitcoin-tx-res.rc
 endif
 
-bitcoin_pos_tx_LDADD = \
+litecoin_pos_tx_LDADD = \
   $(LIBUNIVALUE) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
@@ -610,20 +610,20 @@ bitcoin_pos_tx_LDADD = \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBSECP256K1)
 
-bitcoin_pos_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
+litecoin_pos_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
 # bitcoin-wallet binary #
-bitcoin_pos_wallet_SOURCES = bitcoin-wallet.cpp
-bitcoin_pos_wallet_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-bitcoin_pos_wallet_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-bitcoin_pos_wallet_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+litecoin_pos_wallet_SOURCES = bitcoin-wallet.cpp
+litecoin_pos_wallet_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+litecoin_pos_wallet_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+litecoin_pos_wallet_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-bitcoin_pos_wallet_SOURCES += bitcoin-wallet-res.rc
+litecoin_pos_wallet_SOURCES += bitcoin-wallet-res.rc
 endif
 
-bitcoin_pos_wallet_LDADD = \
+litecoin_pos_wallet_LDADD = \
   $(LIBBITCOIN_WALLET_TOOL) \
   $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_SERVER) \
@@ -638,7 +638,7 @@ bitcoin_pos_wallet_LDADD = \
   $(LIBSECP256K1) \
   $(LIBUNIVALUE)
 
-bitcoin_pos_wallet_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(MINIUPNPC_LIBS) $(ZMQ_LIBS)
+litecoin_pos_wallet_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(MINIUPNPC_LIBS) $(ZMQ_LIBS)
 #
 
 # bitcoinconsensus library #

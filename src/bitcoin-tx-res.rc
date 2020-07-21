@@ -16,14 +16,14 @@ BEGIN
     BEGIN
         BLOCK "040904E4" // U.S. English - multilingual (hex)
         BEGIN
-            VALUE "CompanyName",        "Bitcoin PoS"
-            VALUE "FileDescription",    "bitcoin-pos-tx (CLI Bitcoin transaction editor utility)"
+            VALUE "CompanyName",        "Litecoin PoS"
+            VALUE "FileDescription",    "litecoin-pos-tx (CLI Bitcoin transaction editor utility)"
             VALUE "FileVersion",        VER_FILEVERSION_STR
-            VALUE "InternalName",       "bitcoin-pos-tx"
+            VALUE "InternalName",       "litecoin-pos-tx"
             VALUE "LegalCopyright",     COPYRIGHT_STR
             VALUE "LegalTrademarks1",   "Distributed under the MIT software license, see the accompanying file COPYING or http://www.opensource.org/licenses/mit-license.php."
-            VALUE "OriginalFilename",   "bitcoin-pos-tx.exe"
-            VALUE "ProductName",        "bitcoin-pos-tx"
+            VALUE "OriginalFilename",   "litecoin-pos-tx.exe"
+            VALUE "ProductName",        "litecoin-pos-tx"
             VALUE "ProductVersion",     VER_PRODUCTVERSION_STR
         END
     END

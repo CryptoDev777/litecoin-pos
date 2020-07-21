@@ -48,7 +48,7 @@
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>BitcoinGUI</name>
+    <name>LitecoinPoSGUI</name>
     <message>
         <source>&amp;Transactions</source>
         <translation>&amp;Транзакциялар</translation>
@@ -167,7 +167,7 @@
 <context>
     <name>Intro</name>
     <message>
-        <source>Bitcoin</source>
+        <source>LitecoinPoS</source>
         <translation>Биткоин</translation>
     </message>
     <message>
@@ -337,7 +337,7 @@
     </message>
     </context>
 <context>
-    <name>bitcoin-core</name>
+    <name>litecoin-pos-core</name>
     <message>
         <source>Transaction amount too small</source>
         <translation>Транзакция өте кішкентай</translation>

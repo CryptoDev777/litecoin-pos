@@ -7,18 +7,18 @@ define(_CLIENT_VERSION_RC, 0)
 define(_CLIENT_VERSION_IS_RELEASE, true)
 define(_COPYRIGHT_YEAR, 2020)
 define(_COPYRIGHT_HOLDERS,[The %s developers])
-define(_COPYRIGHT_HOLDERS_SUBSTITUTION,[[Bitcoin PoS Core]])
-AC_INIT([Bitcoin PoS Core],m4_join([.], _CLIENT_VERSION_MAJOR, _CLIENT_VERSION_MINOR, _CLIENT_VERSION_REVISION, m4_if(_CLIENT_VERSION_BUILD, [0], [], _CLIENT_VERSION_BUILD))m4_if(_CLIENT_VERSION_RC, [0], [], [rc]_CLIENT_VERSION_RC),[https://github.com/bitcoin-pos/bitcoin-pos/issues],[bitcoin-pos],[https://bitcoinpos.net/])
+define(_COPYRIGHT_HOLDERS_SUBSTITUTION,[[Litecoin PoS Core]])
+AC_INIT([Litecoin PoS Core],m4_join([.], _CLIENT_VERSION_MAJOR, _CLIENT_VERSION_MINOR, _CLIENT_VERSION_REVISION, m4_if(_CLIENT_VERSION_BUILD, [0], [], _CLIENT_VERSION_BUILD))m4_if(_CLIENT_VERSION_RC, [0], [], [rc]_CLIENT_VERSION_RC),[https://github.com/litecoin-pos/litecoin-pos/issues],[litecoin-pos],[https://litecoinpos.net/])
 AC_CONFIG_SRCDIR([src/validation.cpp])
 AC_CONFIG_HEADERS([src/config/bitcoin-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 
-BITCOIN_DAEMON_NAME=bitcoin-posd
-BITCOIN_GUI_NAME=bitcoin-pos-qt
-BITCOIN_CLI_NAME=bitcoin-pos-cli
-BITCOIN_TX_NAME=bitcoin-pos-tx
-BITCOIN_WALLET_TOOL_NAME=bitcoin-pos-wallet
+BITCOIN_DAEMON_NAME=litecoin-posd
+BITCOIN_GUI_NAME=litecoin-pos-qt
+BITCOIN_CLI_NAME=litecoin-pos-cli
+BITCOIN_TX_NAME=litecoin-pos-tx
+BITCOIN_WALLET_TOOL_NAME=litecoin-pos-wallet
 
 dnl Unless the user specified ARFLAGS, force it to be cr
 AC_ARG_VAR(ARFLAGS, [Flags for the archiver, defaults to <cr> if not set])
@@ -468,25 +468,25 @@ CPPFLAGS="$CPPFLAGS -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS"
 
 AC_ARG_WITH([utils],
   [AS_HELP_STRING([--with-utils],
-  [build bitcoin-pos-cli bitcoin-pos-tx bitcoin-pos-wallet (default=yes)])],
+  [build litecoin-pos-cli litecoin-pos-tx litecoin-pos-wallet (default=yes)])],
   [build_bitcoin_utils=$withval],
   [build_bitcoin_utils=yes])
 
 AC_ARG_ENABLE([util-cli],
   [AS_HELP_STRING([--enable-util-cli],
-  [build bitcoin-pos-cli])],
+  [build litecoin-pos-cli])],
   [build_bitcoin_cli=$enableval],
   [build_bitcoin_cli=$build_bitcoin_utils])
 
 AC_ARG_ENABLE([util-tx],
   [AS_HELP_STRING([--enable-util-tx],
-  [build bitcoin-pos-tx])],
+  [build litecoin-pos-tx])],
   [build_bitcoin_tx=$enableval],
   [build_bitcoin_tx=$build_bitcoin_utils])
 
 AC_ARG_ENABLE([util-wallet],
   [AS_HELP_STRING([--enable-util-wallet],
-  [build bitcoin-pos-wallet])],
+  [build litecoin-pos-wallet])],
   [build_bitcoin_wallet=$enableval],
   [build_bitcoin_wallet=$build_bitcoin_utils])
 
@@ -498,7 +498,7 @@ AC_ARG_WITH([libs],
 
 AC_ARG_WITH([daemon],
   [AS_HELP_STRING([--with-daemon],
-  [build bitcoin-posd daemon (default=yes)])],
+  [build litecoin-posd daemon (default=yes)])],
   [build_bitcoind=$withval],
   [build_bitcoind=yes])
 

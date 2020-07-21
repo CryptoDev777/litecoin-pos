@@ -145,10 +145,10 @@
     </message>
 </context>
 <context>
-    <name>BitcoinGUI</name>
+    <name>LitecoinPoSGUI</name>
     <message>
-        <source>Send coins to a Bitcoin address</source>
-        <translation>ផ្ញើកាក់ទៅកាន់ អាសយដ្ឋាន Bitcoin មួយ</translation>
+        <source>Send coins to a LitecoinPoS address</source>
+        <translation>ផ្ញើកាក់ទៅកាន់ អាសយដ្ឋាន LitecoinPoS មួយ</translation>
     </message>
     </context>
 <context>
@@ -310,6 +310,6 @@
     </message>
     </context>
 <context>
-    <name>bitcoin-core</name>
+    <name>litecoin-pos-core</name>
     </context>
 </TS>

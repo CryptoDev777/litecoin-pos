@@ -3,10 +3,10 @@
 *.exe
 *.pdb
 src/bitcoin
-src/bitcoin-posd
-src/bitcoin-pos-cli
-src/bitcoin-pos-tx
-src/bitcoin-pos-wallet
+src/litecoin-posd
+src/litecoin-pos-cli
+src/litecoin-pos-tx
+src/litecoin-pos-wallet
 src/test/fuzz
 !src/test/fuzz/*.*
 src/test/test_bitcoin
@@ -90,8 +90,8 @@ src/qt/bitcoin-qt.includes
 *.qm
 Makefile
 !depends/Makefile
-src/qt/bitcoin-pos-qt
-Bitcoin-POS-Qt.app
+src/qt/litecoin-pos-qt
+Litecoin-POS-Qt.app
 background.tiff*
 
 # Qt Creator

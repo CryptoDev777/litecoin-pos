@@ -64,14 +64,14 @@ struct Params {
      * This prevents us from warning about the CSV and segwit activations. */
     int MinBIP9WarningHeight;
     /** The size of the step going towards reward matching - rewards from
-     * both chains, bitcoin and bitcoin pos are coming in sync with steps of this size. */
-    int BPSRewardMatchStep;
-    /** Block height at which BPSRewardMatch becomes active - rewards from
-     * both chains, bitcoin and bitcoin pos are in sync as of this height. */
-    int BPSRewardMatchHeight;
-    /** Block height at which BPSDiffAdj becomes active - difficulty adjustment
+     * both chains, bitcoin and litecoin pos are coming in sync with steps of this size. */
+    int LTCPRewardMatchStep;
+    /** Block height at which LTCPRewardMatch becomes active - rewards from
+     * both chains, bitcoin and litecoin pos are in sync as of this height. */
+    int LTCPRewardMatchHeight;
+    /** Block height at which LTCPDiffAdj becomes active - difficulty adjustment
      * formula is changed so that block times are more reliable. */
-    int BPSDiffAdjHeight;
+    int LTCPDiffAdjHeight;
     /**
      * Minimum blocks including miner confirmation of the total of 2016 blocks in a retargeting period,
      * (nPowTargetTimespan / nPowTargetSpacing) which is also used for BIP9 deployments.
@@ -89,7 +89,7 @@ struct Params {
     int64_t DifficultyAdjustmentInterval(const int height) const
     {
         int64_t targetTimeSpan;
-        if (height < BPSDiffAdjHeight) {
+        if (height < LTCPDiffAdjHeight) {
             targetTimeSpan = nPowTargetSpacing;
         } else {
             targetTimeSpan = nPowTargetTimespan;

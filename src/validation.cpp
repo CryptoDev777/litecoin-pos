@@ -1290,25 +1290,28 @@ bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 {
     CAmount nSubsidy = 50 * COIN;
+    if (nHeight == 1)  {
+        nSubsidy = PREMINE_COIN;
+    } else {
+        int reductions = (nHeight - 1) / consensusParams.LTCPRewardMatchStep;
+        if (reductions <= 3)
+        {
+            // Halve the reward - right shift
+            nSubsidy >>= reductions;
+        }
+        else
+        {
+            nSubsidy >>= 3;
+            reductions = (nHeight - consensusParams.LTCPRewardMatchHeight - 1) / consensusParams.nSubsidyHalvingInterval;
 
-    int reductions = (nHeight - 1) / consensusParams.BPSRewardMatchStep;
+            // Force block reward to zero at some point
+            if (reductions >= 64)
+                return 0;
 
-    if (reductions <= 3)
-    {
-        // Halve the reward - right shift
-        nSubsidy >>= reductions;
-    }
-    else
-    {
-        nSubsidy >>= 3;
-        reductions = (nHeight - consensusParams.BPSRewardMatchHeight - 1) / consensusParams.nSubsidyHalvingInterval;
-
-        // Force block reward to zero at some point
-        if (reductions >= 64)
-            return 0;
-
-        // Subsidy is reduced by 25% every 700,000 blocks which will occur approximately every 4 years.
-        nSubsidy *= pow(0.75, reductions);
+            // Subsidy is reduced by 25% every 700,000 blocks which will occur approximately every 4 years.
+            nSubsidy *= pow(0.75, reductions);
+        }
+        
     }
 
     return nSubsidy;

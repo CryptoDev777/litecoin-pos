@@ -71,7 +71,7 @@
 // Application startup time (used for uptime calculation)
 const int64_t nStartupTime = GetTime();
 
-const char * const BITCOIN_CONF_FILENAME = "bitcoin-pos.conf";
+const char * const BITCOIN_CONF_FILENAME = "litecoin-pos.conf";
 
 ArgsManager gArgs;
 
@@ -555,13 +555,13 @@ void PrintExceptionContinue(const std::exception* pex, const char* pszThread)
 
 fs::path GetDefaultDataDir()
 {
-    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Bitcoin-pos
-    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Bitcoin-pos
-    // Mac: ~/Library/Application Support/Bitcoin-pos
-    // Unix: ~/.bitcoin-pos
+    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Litecoin-pos
+    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Litecoin-pos
+    // Mac: ~/Library/Application Support/Litecoin-pos
+    // Unix: ~/.litecoin-pos
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "Bitcoin-pos";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "Litecoin-pos";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -571,10 +571,10 @@ fs::path GetDefaultDataDir()
         pathRet = fs::path(pszHome);
 #ifdef MAC_OSX
     // Mac
-    return pathRet / "Library/Application Support/Bitcoin-pos";
+    return pathRet / "Library/Application Support/Litecoin-pos";
 #else
     // Unix
-    return pathRet / ".bitcoin-pos";
+    return pathRet / ".litecoin-pos";
 #endif
 #endif
 }

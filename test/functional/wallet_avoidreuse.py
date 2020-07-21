@@ -164,8 +164,8 @@ class AvoidReuseTest(BitcoinTestFramework):
 
     def test_fund_send_fund_senddirty(self):
         '''
-        Test the same as test_fund_send_fund_send, except send the 10 BPS with
-        the avoid_reuse flag set to false. This means the 10 BPS send should succeed,
+        Test the same as test_fund_send_fund_send, except send the 10 LTCP with
+        the avoid_reuse flag set to false. This means the 10 LTCP send should succeed,
         where it fails in test_fund_send_fund_send.
         '''
         self.log.info("Test fund send fund send dirty")
@@ -177,9 +177,9 @@ class AvoidReuseTest(BitcoinTestFramework):
         self.nodes[0].generate(1)
         self.sync_all()
 
-        # listunspent should show 1 single, unused 10 BPS output
+        # listunspent should show 1 single, unused 10 LTCP output
         assert_unspent(self.nodes[1], total_count=1, total_sum=10, reused_supported=True, reused_count=0)
-        # getbalances should show no used, 10 BPS trusted
+        # getbalances should show no used, 10 LTCP trusted
         assert_balances(self.nodes[1], mine={"used": 0, "trusted": 10})
         # node 0 should not show a used entry, as it does not enable avoid_reuse
         assert("used" not in self.nodes[0].getbalances()["mine"])
@@ -188,39 +188,39 @@ class AvoidReuseTest(BitcoinTestFramework):
         self.nodes[0].generate(1)
         self.sync_all()
 
-        # listunspent should show 1 single, unused 5 BPS output
+        # listunspent should show 1 single, unused 5 LTCP output
         assert_unspent(self.nodes[1], total_count=1, total_sum=5, reused_supported=True, reused_count=0)
-        # getbalances should show no used, 5 BPS trusted
+        # getbalances should show no used, 5 LTCP trusted
         assert_balances(self.nodes[1], mine={"used": 0, "trusted": 5})
 
         self.nodes[0].sendtoaddress(fundaddr, 10)
         self.nodes[0].generate(1)
         self.sync_all()
 
-        # listunspent should show 2 total outputs (5, 10 BPS), one unused (5), one reused (10)
+        # listunspent should show 2 total outputs (5, 10 LTCP), one unused (5), one reused (10)
         assert_unspent(self.nodes[1], total_count=2, total_sum=15, reused_count=1, reused_sum=10)
-        # getbalances should show 10 used, 5 BPS trusted
+        # getbalances should show 10 used, 5 LTCP trusted
         assert_balances(self.nodes[1], mine={"used": 10, "trusted": 5})
 
         self.nodes[1].sendtoaddress(address=retaddr, amount=10, avoid_reuse=False)
 
-        # listunspent should show 1 total outputs (5 BPS), unused
+        # listunspent should show 1 total outputs (5 LTCP), unused
         assert_unspent(self.nodes[1], total_count=1, total_sum=5, reused_count=0)
-        # getbalances should show no used, 5 BPS trusted
+        # getbalances should show no used, 5 LTCP trusted
         assert_balances(self.nodes[1], mine={"used": 0, "trusted": 5})
 
-        # node 1 should now have about 5 BPS left (for both cases)
+        # node 1 should now have about 5 LTCP left (for both cases)
         assert_approx(self.nodes[1].getbalance(), 5, 0.001)
         assert_approx(self.nodes[1].getbalance(avoid_reuse=False), 5, 0.001)
 
     def test_fund_send_fund_send(self, second_addr_type):
         '''
         Test the simple case where [1] generates a new address A, then
-        [0] sends 10 BPS to A.
-        [1] spends 5 BPS from A. (leaving roughly 5 BPS useable)
-        [0] sends 10 BPS to A again.
-        [1] tries to spend 10 BPS (fails; dirty).
-        [1] tries to spend 4 BPS (succeeds; change address sufficient)
+        [0] sends 10 LTCP to A.
+        [1] spends 5 LTCP from A. (leaving roughly 5 LTCP useable)
+        [0] sends 10 LTCP to A again.
+        [1] tries to spend 10 LTCP (fails; dirty).
+        [1] tries to spend 4 LTCP (succeeds; change address sufficient)
         '''
         self.log.info("Test fund send fund send")
 
@@ -231,18 +231,18 @@ class AvoidReuseTest(BitcoinTestFramework):
         self.nodes[0].generate(1)
         self.sync_all()
 
-        # listunspent should show 1 single, unused 10 BPS output
+        # listunspent should show 1 single, unused 10 LTCP output
         assert_unspent(self.nodes[1], total_count=1, total_sum=10, reused_supported=True, reused_count=0)
-        # getbalances should show no used, 10 BPS trusted
+        # getbalances should show no used, 10 LTCP trusted
         assert_balances(self.nodes[1], mine={"used": 0, "trusted": 10})
 
         self.nodes[1].sendtoaddress(retaddr, 5)
         self.nodes[0].generate(1)
         self.sync_all()
 
-        # listunspent should show 1 single, unused 5 BPS output
+        # listunspent should show 1 single, unused 5 LTCP output
         assert_unspent(self.nodes[1], total_count=1, total_sum=5, reused_supported=True, reused_count=0)
-        # getbalances should show no used, 5 BPS trusted
+        # getbalances should show no used, 5 LTCP trusted
         assert_balances(self.nodes[1], mine={"used": 0, "trusted": 5})
 
         # For the second send, we transmute it to a related single-key address
@@ -261,9 +261,9 @@ class AvoidReuseTest(BitcoinTestFramework):
         self.nodes[0].generate(1)
         self.sync_all()
 
-        # listunspent should show 2 total outputs (5, 10 BPS), one unused (5), one reused (10)
+        # listunspent should show 2 total outputs (5, 10 LTCP), one unused (5), one reused (10)
         assert_unspent(self.nodes[1], total_count=2, total_sum=15, reused_count=1, reused_sum=10)
-        # getbalances should show 10 used, 5 BPS trusted
+        # getbalances should show 10 used, 5 LTCP trusted
         assert_balances(self.nodes[1], mine={"used": 10, "trusted": 5})
 
         # node 1 should now have a balance of 5 (no dirty) or 15 (including dirty)
@@ -274,12 +274,12 @@ class AvoidReuseTest(BitcoinTestFramework):
 
         self.nodes[1].sendtoaddress(retaddr, 4)
 
-        # listunspent should show 2 total outputs (1, 10 BPS), one unused (1), one reused (10)
+        # listunspent should show 2 total outputs (1, 10 LTCP), one unused (1), one reused (10)
         assert_unspent(self.nodes[1], total_count=2, total_sum=11, reused_count=1, reused_sum=10)
-        # getbalances should show 10 used, 1 BPS trusted
+        # getbalances should show 10 used, 1 LTCP trusted
         assert_balances(self.nodes[1], mine={"used": 10, "trusted": 1})
 
-        # node 1 should now have about 1 BPS left (no dirty) and 11 (including dirty)
+        # node 1 should now have about 1 LTCP left (no dirty) and 11 (including dirty)
         assert_approx(self.nodes[1].getbalance(), 1, 0.001)
         assert_approx(self.nodes[1].getbalance(avoid_reuse=False), 11, 0.001)
 

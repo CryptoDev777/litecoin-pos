@@ -4726,7 +4726,7 @@ int CWalletTx::GetBlocksToMaturity() const
     if (!(IsCoinBase() || IsCoinStake()))
         return 0;
     int chain_depth = GetDepthInMainChain();
-    //BPSTODO Some wallets are still not abandoning coinstakes correctly
+    //LTCPTODO Some wallets are still not abandoning coinstakes correctly
     //assert(chain_depth >= 0); // coinbase tx should not be conflicted
     return std::max(0, (COINBASE_MATURITY+1) - chain_depth);
 }
@@ -4948,15 +4948,15 @@ void CWallet::ConnectScriptPubKeyManNotifiers()
     }
 }
 
-void CWallet::StakeBPSs(bool fStake, CConnman* connman, CTxMemPool* mempool)
+void CWallet::StakeLTCPs(bool fStake, CConnman* connman, CTxMemPool* mempool)
 {
-    ::StakeBPSs(fStake, this, connman, mempool, stakeThread);
+    ::StakeLTCPs(fStake, this, connman, mempool, stakeThread);
 }
 
 void CWallet::StartStake(CConnman *connman, CTxMemPool* mempool)
 {
     m_enabled_staking = true;
-    StakeBPSs(true, connman, mempool);
+    StakeLTCPs(true, connman, mempool);
 }
 
 void CWallet::StopStake()
@@ -4966,7 +4966,7 @@ void CWallet::StopStake()
     {
         auto locked_chain = chain().lock();
         LOCK(cs_wallet);
-        StakeBPSs(false, 0, 0);
+        StakeLTCPs(false, 0, 0);
     }
     stakeThread = 0;
 }

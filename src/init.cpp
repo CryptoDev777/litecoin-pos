@@ -106,7 +106,7 @@ static const char* DEFAULT_ASMAP_FILENAME="ip_asn.map";
 /**
  * The PID file facilities.
  */
-static const char* BITCOIN_PID_FILENAME = "bitcoin-posd.pid";
+static const char* BITCOIN_PID_FILENAME = "litecoin-posd.pid";
 
 static fs::path GetPidFile()
 {
@@ -590,7 +590,7 @@ void SetupServerArgs()
 
 std::string LicenseInfo()
 {
-    const std::string URL_SOURCE_CODE = "<https://github.com/bitcoin-pos/bitcoin-pos>";
+    const std::string URL_SOURCE_CODE = "<https://github.com/litecoin-pos/litecoin-pos>";
 
     return CopyrightHolders(strprintf(_("Copyright (C) %i").translated, COPYRIGHT_YEAR) + " ") + "\n" +
            "\n" +
