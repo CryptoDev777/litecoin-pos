@@ -138,10 +138,10 @@ See [`systemd.exec(5)`](https://www.freedesktop.org/software/systemd/man/systemd
 for more details.
 
 When using the provided init files under `contrib/init`, overriding the
-`datadir` option in `/etc/bitcoin/bitcoin.conf` will have no effect.
+`datadir` option in `/etc/bitcoin/litecoin-pos.conf` will have no effect.
 This is because the command line arguments specified in the init files
 take precedence over the options specified in
-`/etc/bitcoin/bitcoin.conf`.
+`/etc/bitcoin/litecoin-pos.conf`.
 
 
 Documentation
@@ -159,7 +159,7 @@ Documentation
   about how to secure this interface.
 
 - A new [document](https://github.com/bitcoin/bitcoin/blob/master/doc/bitcoin-conf.md)
-  about the `bitcoin.conf` file describes how to use it to configure
+  about the `litecoin-pos.conf` file describes how to use it to configure
   Bitcoin Core.
 
 - A new document introduces Bitcoin Core's BIP174 [Partially-Signed
@@ -981,7 +981,7 @@ Changes for particular platforms
 - #13724 contrib: Support ARM and RISC-V symbol check (ken2812221)
 - #13159 Don't close old debug log file handle prematurely when trying to re-open (on SIGHUP) (practicalswift)
 - #14186 bitcoin-cli: don't translate command line options (HashUnlimited)
-- #14057 logging: Only log `using config file path_to_bitcoin.conf` message on startup if conf file exists (leishman)
+- #14057 logging: Only log `using config file path_to_litecoin-pos.conf` message on startup if conf file exists (leishman)
 - #14164 Update univalue subtree (MarcoFalke)
 - #14272 init: Remove deprecated args from hidden args (MarcoFalke)
 - #14494 Error if # is used in rpcpassword in conf (MeshCollider)

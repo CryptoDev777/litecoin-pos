@@ -119,18 +119,16 @@ public:
         // This is fine at runtime as we'll fall back to using them as a oneshot if they don't support the
         // service bits we want, but we should get them updated to support all service bits wanted by any
         // release ASAP to avoid it where possible.
-        /*vSeeds.emplace_back("seed1.litecoinpos.net");
-        vSeeds.emplace_back("seed2.litecoinpos.net");
-        vSeeds.emplace_back("seed3.litecoinpos.net");
-        vSeeds.emplace_back("seed4.litecoinpos.net");
-        vSeeds.emplace_back("seed5.litecoinpos.net");
-        vSeeds.emplace_back("seed6.litecoinpos.net");*/
+        vSeeds.emplace_back("seed1.tokl.io");
+        vSeeds.emplace_back("seed2.tokl.io");
+        vSeeds.emplace_back("seed3.tokl.io");
+        vSeeds.emplace_back("seed4.tokl.io");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,8);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,18);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,128);
-        base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
-        base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
+        base58Prefixes[EXT_PUBLIC_KEY] = {0x77, 0x88, 0xB2, 0x1E};
+        base58Prefixes[EXT_SECRET_KEY] = {0x77, 0x88, 0xAD, 0xE4};
 
         bech32_hrp = "lp";
 
