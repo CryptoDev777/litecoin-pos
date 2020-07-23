@@ -424,7 +424,7 @@ static UniValue getstakingstatus(const JSONRPCRequest& request)
 #endif
 
     bool staking = walletStakingEnabled && lastCoinStakeSearchInterval && nWeight;
-    bool hasConnections = g_rpc_node->connman->GetNodeCount(CConnman::CONNECTIONS_ALL) >= 4;
+    bool hasConnections = g_rpc_node->connman->GetNodeCount(CConnman::CONNECTIONS_ALL) >= 2;
     bool isSynced = !::ChainstateActive().IsInitialBlockDownload();
     bool hasCoins = nWeight != 0;
 
