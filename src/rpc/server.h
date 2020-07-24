@@ -114,7 +114,7 @@ public:
 };
 
 /**
- * Bitcoin RPC command dispatcher.
+ * Litecoin PoS RPC command dispatcher.
  */
 class CRPCTable
 {

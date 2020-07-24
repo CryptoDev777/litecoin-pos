@@ -5,7 +5,7 @@
 bin_PROGRAMS += qt/litecoin-pos-qt
 EXTRA_LIBRARIES += qt/libbitcoinqt.a
 
-# bitcoin qt core #
+# litecoinpos qt core #
 include Makefile.qt_locale.include
 
 QT_FORMS_UI = \

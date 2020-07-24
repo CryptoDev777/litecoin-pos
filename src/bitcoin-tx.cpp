@@ -101,8 +101,8 @@ static int AppInitRawTx(int argc, char* argv[])
     if (argc < 2 || HelpRequested(gArgs)) {
         // First part of help message is specific to this utility
         std::string strUsage = PACKAGE_NAME " litecoin-pos-tx utility version " + FormatFullVersion() + "\n\n" +
-            "Usage:  litecoin-pos-tx [options] <hex-tx> [commands]  Update hex-encoded bitcoin transaction\n" +
-            "or:     litecoin-pos-tx [options] -create [commands]   Create hex-encoded bitcoin transaction\n" +
+            "Usage:  litecoin-pos-tx [options] <hex-tx> [commands]  Update hex-encoded litecoin-pos transaction\n" +
+            "or:     litecoin-pos-tx [options] -create [commands]   Create hex-encoded litecoin-pos transaction\n" +
             "\n";
         strUsage += gArgs.GetHelpMessage();
 
@@ -792,7 +792,7 @@ static int CommandLineRawTx(int argc, char* argv[])
             if (argc < 2)
                 throw std::runtime_error("too few parameters");
 
-            // param: hex-encoded bitcoin transaction
+            // param: hex-encoded litecoin-pos transaction
             std::string strHexTx(argv[1]);
             if (strHexTx == "-")                 // "-" implies standard input
                 strHexTx = readStdin();

@@ -56,7 +56,7 @@
 #include <boost/thread.hpp>
 
 #if defined(NDEBUG)
-# error "Bitcoin cannot be compiled without assertions."
+# error "Litecoin PoS cannot be compiled without assertions."
 #endif
 
 #define MICRO 0.000001
@@ -5348,7 +5348,7 @@ bool LoadExternalBlockFile(const CChainParams& chainparams, FILE* fileIn, FlatFi
                     }
                 }
 
-                // In Bitcoin POW this only needed to be done for genesis and at the end of block indexing
+                // In Litecoin PoS POW this only needed to be done for genesis and at the end of block indexing
                 // For POS we need to sync this after every block to ensure txdb is populated for validating PoS proofs
                 {
                     BlockValidationState state;

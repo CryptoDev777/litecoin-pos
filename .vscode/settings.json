@@ -1,6 +1,10 @@
 {
   "files.associations": {
     "utility": "cpp",
-    "cmath": "cpp"
+    "cmath": "cpp",
+    "deque": "cpp",
+    "list": "cpp",
+    "vector": "cpp",
+    "xstring": "cpp"
   }
 }

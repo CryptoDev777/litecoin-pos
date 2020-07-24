@@ -19,5 +19,5 @@ depending on the speed of your computer and network connection, the synchronizat
 process can take anywhere from a few hours to a day or more.
 
 See the bitcoin proof of stake FAQs at:
-  https://www.litecoinpos.net
+  https://www.litecoinpos.org
 for more help and information.

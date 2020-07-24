@@ -13,7 +13,7 @@ static const int MODEL_UPDATE_DELAY = 250;
 /* AskPassphraseDialog -- Maximum passphrase length */
 static const int MAX_PASSPHRASE_SIZE = 1024;
 
-/* BitcoinGUI -- Size of icons in status bar */
+/* LitecoinPosGUI -- Size of icons in status bar */
 static const int STATUSBAR_ICONSIZE = 16;
 
 static const bool DEFAULT_SPLASHSCREEN = true;
@@ -43,7 +43,7 @@ static const int TOOLTIP_WRAP_THRESHOLD = 80;
 #define SPINNER_FRAMES 36
 
 #define QAPP_ORG_NAME "Litecoin PoS"
-#define QAPP_ORG_DOMAIN "litecoinpos.net"
+#define QAPP_ORG_DOMAIN "litecoinpos.org"
 #define QAPP_APP_NAME_DEFAULT "Litecoin-POS-Qt"
 #define QAPP_APP_NAME_TESTNET "Litecoin-POS-Qt-testnet"
 #define QAPP_APP_NAME_REGTEST "Litecoin-POS-Qt-regtest"

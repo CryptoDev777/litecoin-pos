@@ -24,7 +24,7 @@ namespace util {
 //!       https://github.com/bitcoin/bitcoin/pull/15934/files#r337691812)
 using SettingsValue = UniValue;
 
-//! Stored bitcoin settings. This struct combines settings from the command line
+//! Stored litecoin-pos settings. This struct combines settings from the command line
 //! and a read-only configuration file.
 struct Settings {
     //! Map of setting name to forced setting value.

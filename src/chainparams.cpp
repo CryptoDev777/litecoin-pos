@@ -97,7 +97,7 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 32-bit integer with any alignment.
          */
-        pchMessageStart[0] = 0xe8;
+        pchMessageStart[0] = 0x77;
         pchMessageStart[1] = 0xf6;
         pchMessageStart[2] = 0xd0;
         pchMessageStart[3] = 0xd4;
@@ -119,13 +119,15 @@ public:
         // This is fine at runtime as we'll fall back to using them as a oneshot if they don't support the
         // service bits we want, but we should get them updated to support all service bits wanted by any
         // release ASAP to avoid it where possible.
-        vSeeds.emplace_back("seed1.tokl.io");
-        vSeeds.emplace_back("seed2.tokl.io");
-        vSeeds.emplace_back("seed3.tokl.io");
-        vSeeds.emplace_back("seed4.tokl.io");
+        vSeeds.emplace_back("seed1.litecoinpos.org");
+        vSeeds.emplace_back("seed2.litecoinpos.org");
+        vSeeds.emplace_back("seed3.litecoinpos.org");
+        vSeeds.emplace_back("seed4.litecoinpos.org");
+        vSeeds.emplace_back("seed5.tokl.io");
+        vSeeds.emplace_back("seed6.tokl.io");
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,8);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,18);
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,50);//M
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,110);//m
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,128);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x77, 0x88, 0xB2, 0x1E};
         base58Prefixes[EXT_SECRET_KEY] = {0x77, 0x88, 0xAD, 0xE4};
@@ -217,13 +219,15 @@ public:
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("testnet-seed1.tokl.io");
-        vSeeds.emplace_back("testnet-seed2.tokl.io");
-        vSeeds.emplace_back("testnet-seed3.tokl.io");
-        vSeeds.emplace_back("testnet-seed4.tokl.io");
+        vSeeds.emplace_back("testnet-seed1.litecoinpos.org");
+        vSeeds.emplace_back("testnet-seed2.litecoinpos.org");
+        vSeeds.emplace_back("testnet-seed3.litecoinpos.org");
+        vSeeds.emplace_back("testnet-seed4.litecoinpos.org");
+        vSeeds.emplace_back("testnet-seed5.tokl.io");
+        vSeeds.emplace_back("testnet-seed6.tokl.io");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,65);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,78);
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,127);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,130);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};

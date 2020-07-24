@@ -1,7 +1,7 @@
 Litecoin PoS Core integration/staging tree
 =====================================
 
-https://litecoinpos.net
+https://litecoinpos.org
 
 What is Litecoin PoS?
 ----------------
@@ -20,8 +20,8 @@ terms of power consumption, but it is also lowering the entry barrier for contri
 to the creation of new blocks.
 
 For more information, as well as an immediately usable, binary version of
-the Litecoin PoS Core software, see https://www.litecoinpos.net/#wallet-ltcp, or read the
-[original whitepaper](https://www.litecoinpos.net/WhitePaperLTCP.pdf).
+the Litecoin PoS Core software, see https://www.litecoinpos.org/#wallet-ltcp, or read the
+[original whitepaper](https://www.litecoinpos.org/WhitePaperLTCP.pdf).
 
 License
 -------
