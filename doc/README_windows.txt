@@ -18,6 +18,6 @@ However, it downloads and stores the entire history of LitecoinPoS transactions;
 depending on the speed of your computer and network connection, the synchronization
 process can take anywhere from a few hours to a day or more.
 
-See the bitcoin proof of stake FAQs at:
+See the Litecoin-PoS proof of stake FAQs at:
   https://www.litecoinpos.org
 for more help and information.

@@ -285,7 +285,7 @@ RES_IMAGES =
 
 RES_MOVIES = $(wildcard $(srcdir)/qt/res/movies/spinner-*.png)
 
-BITCOIN_RC = qt/res/bitcoin-qt-res.rc
+BITCOIN_RC = qt/res/litecoin-pos-qt-res.rc
 
 BITCOIN_QT_INCLUDES = -DQT_NO_KEYWORDS
 
@@ -310,7 +310,7 @@ QT_FORMS_H=$(join $(dir $(QT_FORMS_UI)),$(addprefix ui_, $(notdir $(QT_FORMS_UI:
 $(QT_MOC): $(QT_FORMS_H)
 $(qt_libbitcoinqt_a_OBJECTS) $(qt_litecoin_pos_qt_OBJECTS) : | $(QT_MOC)
 
-# bitcoin-qt binary #
+# litecoin-pos-qt binary #
 qt_litecoin_pos_qt_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(BITCOIN_QT_INCLUDES) \
   $(QT_INCLUDES) $(QR_CFLAGS)
 qt_litecoin_pos_qt_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)

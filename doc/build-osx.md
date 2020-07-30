@@ -84,7 +84,7 @@ In this case there is no dependency on Berkeley DB 4.8.
 Mining is also possible in disable-wallet mode using the `getblocktemplate` RPC call.
 
 ## Running
-Bitcoin Core is now available at `./src/bitcoind`
+Bitcoin Core is now available at `./src/litecoin-posd`
 
 Before running, you may create an empty configuration file:
 ```shell
@@ -95,7 +95,7 @@ touch "/Users/${USER}/Library/Application Support/Bitcoin/litecoin-pos.conf"
 chmod 600 "/Users/${USER}/Library/Application Support/Bitcoin/litecoin-pos.conf"
 ```
 
-The first time you run bitcoind, it will start downloading the blockchain. This process could
+The first time you run litecoin-posd, it will start downloading the blockchain. This process could
 take many hours, or even days on slower than average systems.
 
 You can monitor the download process by looking at the debug.log file:
@@ -105,9 +105,9 @@ tail -f $HOME/Library/Application\ Support/Bitcoin/debug.log
 
 ## Other commands:
 ```shell
-./src/bitcoind -daemon      # Starts the bitcoin daemon.
-./src/bitcoin-cli --help    # Outputs a list of command-line options.
-./src/bitcoin-cli help      # Outputs a list of RPC commands when the daemon is running.
+./src/litecoin-posd -daemon      # Starts the bitcoin daemon.
+./src/litecoin-pos-cli --help    # Outputs a list of command-line options.
+./src/litecoin-pos-cli help      # Outputs a list of RPC commands when the daemon is running.
 ```
 
 ## Notes

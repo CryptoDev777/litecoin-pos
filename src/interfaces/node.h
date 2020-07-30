@@ -35,7 +35,7 @@ namespace interfaces {
 class Handler;
 class Wallet;
 
-//! Top-level interface for a litecoin-pos node (bitcoind process).
+//! Top-level interface for a litecoin-pos node (litecoin-posd process).
 class Node
 {
 public:

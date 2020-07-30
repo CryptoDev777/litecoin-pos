@@ -1,7 +1,7 @@
 # It is not recommended to modify this file in-place, because it will
 # be overwritten during package upgrades. If you want to add further
 # options or overwrite existing ones then use
-# $ systemctl edit bitcoind.service
+# $ systemctl edit litecoin-posd.service
 # See "man systemd.service" for details.
 
 # Note that almost all daemon options could be specified in
@@ -14,10 +14,10 @@ Description=Bitcoin daemon
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/bitcoind -daemon \
-                            -pid=/run/bitcoind/bitcoind.pid \
+ExecStart=/usr/bin/litecoin-posd -daemon \
+                            -pid=/run/litecoin-posd/litecoin-posd.pid \
                             -conf=/etc/bitcoin/litecoin-pos.conf \
-                            -datadir=/var/lib/bitcoind
+                            -datadir=/var/lib/litecoin-posd
 
 # Make sure the config directory is readable by the service user
 PermissionsStartOnly=true
@@ -27,7 +27,7 @@ ExecStartPre=/bin/chgrp bitcoin /etc/bitcoin
 ####################
 
 Type=forking
-PIDFile=/run/bitcoind/bitcoind.pid
+PIDFile=/run/litecoin-posd/litecoin-posd.pid
 Restart=on-failure
 TimeoutStopSec=600
 
@@ -38,16 +38,16 @@ TimeoutStopSec=600
 User=bitcoin
 Group=bitcoin
 
-# /run/bitcoind
-RuntimeDirectory=bitcoind
+# /run/litecoin-posd
+RuntimeDirectory=litecoin-posd
 RuntimeDirectoryMode=0710
 
 # /etc/bitcoin
 ConfigurationDirectory=bitcoin
 ConfigurationDirectoryMode=0710
 
-# /var/lib/bitcoind
-StateDirectory=bitcoind
+# /var/lib/litecoin-posd
+StateDirectory=litecoin-posd
 StateDirectoryMode=0710
 
 # Hardening measures

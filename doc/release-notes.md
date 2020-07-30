@@ -27,7 +27,7 @@ How to Upgrade
 If you are running an older version, shut it down. Wait until it has completely
 shut down (which might take a few minutes in some cases), then run the
 installer (on Windows) or just copy over `/Applications/Bitcoin-Qt` (on Mac)
-or `bitcoind`/`bitcoin-qt` (on Linux).
+or `litecoin-posd`/`litecoin-pos-qt` (on Linux).
 
 Upgrading directly from a version of Bitcoin Core that has reached its EOL is
 possible, but it might take some time if the data directory needs to be migrated. Old
@@ -170,7 +170,7 @@ New settings
   Numbers (ASNs) and then limiting the number of connections made to any
   single ASN.  See [issue #16599](https://github.com/bitcoin/bitcoin/issues/16599),
   [PR #16702](https://github.com/bitcoin/bitcoin/pull/16702), and the
-  `bitcoind help` for more information.  This option is experimental and
+  `litecoin-posd help` for more information.  This option is experimental and
   subject to removal or breaking changes in future releases, so the
   legacy /16 prefix mapping of IP addresses remains the default.  (#16702)
 
@@ -260,7 +260,7 @@ Low-level changes
 Utilities
 ---------
 
-- The `bitcoin-cli` utility used with the `-getinfo` parameter now
+- The `litecoin-pos-cli` utility used with the `-getinfo` parameter now
   returns a `headers` field with the number of downloaded block headers
   on the best headers chain (similar to the `blocks` field that is also
   returned) and a `verificationprogress` field that estimates how much
@@ -268,7 +268,7 @@ Utilities
   information returned no longer includes the `protocolversion`,
   `walletversion`, and `keypoololdest` fields.  (#17302, #17650)
 
-- The `bitcoin-cli` utility now accepts a `-stdinwalletpassphrase`
+- The `litecoin-pos-cli` utility now accepts a `-stdinwalletpassphrase`
   parameter that can be used when calling the `walletpassphrase` and
   `walletpassphrasechange` RPCs to read the passphrase from standard
   input without echoing it to the terminal, improving security against
@@ -585,7 +585,7 @@ Build system
 - #18395 scripts: Add pe dylib checking to symbol-check.py (fanquake)
 - #18415 scripts: Add macho tests to test-security-check.py (fanquake)
 - #18425 releases: Update with new Windows code signing certificate (achow101)
-- #18702 Fix ASLR for bitcoin-cli on Windows (fanquake)
+- #18702 Fix ASLR for litecoin-pos-cli on Windows (fanquake)
 
 ### Tests and QA
 - #12134 Build previous releases and run functional tests (Sjors)
@@ -758,7 +758,7 @@ Build system
 - #17026 Update bips.md for default bech32 addresses in 0.20.0 (MarcoFalke)
 - #17081 Fix Makefile target in benchmarking.md (theStack)
 - #17102 Add missing indexes/blockfilter/basic to doc/files.md (MarcoFalke)
-- #17119 Fix broken bitcoin-cli examples (andrewtoth)
+- #17119 Fix broken litecoin-pos-cli examples (andrewtoth)
 - #17134 Add switch on enum example to developer notes (hebasto)
 - #17142 Update macdeploy README to include all files produced by `make deploy` (za-kk)
 - #17146 github: Add warning for bug reports (laanwj)
@@ -777,14 +777,14 @@ Build system
 - #17370 Update doc/bips.md with recent changes in master (MarcoFalke)
 - #17393 Added regtest config for linearize script (gr0kchain)
 - #17411 Add some better examples for scripted diff (laanwj)
-- #17503 Remove bitness from bitcoin-qt help message and manpage (laanwj)
+- #17503 Remove bitness from litecoin-pos-qt help message and manpage (laanwj)
 - #17539 Update and improve Developer Notes (hebasto)
 - #17561 Changed MiniUPnPc link to https in dependencies.md (sandakersmann)
 - #17596 Change doxygen URL to doxygen.bitcoincore.org (laanwj)
 - #17598 Update release process with latest changes (MarcoFalke)
 - #17617 Unify unix epoch time descriptions (jonatack)
 - #17637 script: Add keyserver to verify-commits readme (emilengler)
-- #17648 Rename wallet-tool references to bitcoin-wallet (hel-o)
+- #17648 Rename wallet-tool references to litecoin-pos-wallet (hel-o)
 - #17688 Add "ci" prefix to CONTRIBUTING.md (hebasto)
 - #17751 Use recommended shebang approach in documentation code block (hackerrdave)
 - #17752 Fix directory path for secp256k1 subtree in developer-notes (hackerrdave)
@@ -822,7 +822,7 @@ Build system
 ### Miscellaneous
 - #15600 lockedpool: When possible, use madvise to avoid including sensitive information in core dumps (luke-jr)
 - #15934 Merge settings one place instead of five places (ryanofsky)
-- #16115 On bitcoind startup, write config args to debug.log (LarryRuane)
+- #16115 On litecoin-posd startup, write config args to debug.log (LarryRuane)
 - #16117 util: Replace boost sleep with std sleep (MarcoFalke)
 - #16161 util: Fix compilation errors in support/lockedpool.cpp (jkczyz)
 - #16802 scripts: In linearize, search for next position of magic bytes rather than fail (takinbo)
@@ -845,7 +845,7 @@ Build system
 - #17507 random: mark RandAddPeriodic and SeedPeriodic as noexcept (fanquake)
 - #17527 Fix CPUID subleaf iteration (sipa)
 - #17604 util: Make schedulebatchpriority advisory only (fanquake)
-- #17650 util: Remove unwanted fields from bitcoin-cli -getinfo (malevolent)
+- #17650 util: Remove unwanted fields from litecoin-pos-cli -getinfo (malevolent)
 - #17671 script: Fixed wget call in gitian-build.py (willyko)
 - #17699 Make env data logging optional (sipa)
 - #17721 util: Don't allow base58 decoding of non-base58 strings. add base58 tests (practicalswift)
@@ -926,7 +926,7 @@ Build system
 - #15508 Refactor analyzepsbt for use outside RPC code (gwillen)
 - #15747 Remove plethora of Get*Balance (MarcoFalke)
 - #15728 Refactor relay transactions (jnewbery)
-- #15639 bitcoin-wallet tool: Drop libbitcoin_server.a dependency (ryanofsky)
+- #15639 litecoin-pos-wallet tool: Drop libbitcoin_server.a dependency (ryanofsky)
 - #15853 Remove unused import checkpoints.h (MarcoFalke)
 - #15780 add cachable amounts for caching credit/debit values (kallewoof)
 - #15778 Move maxtxfee from node to wallet (jnewbery)
@@ -1051,7 +1051,7 @@ Build system
 - #16291 Stop translating PACKAGE_NAME (MarcoFalke)
 - #16380 Remove unused bits from the service flags enum (MarcoFalke)
 - #16379 Fix autostart filenames on Linux for testnet/regtest (hebasto)
-- #16366 init: Use InitError for all errors in bitcoind/qt (MarcoFalke)
+- #16366 init: Use InitError for all errors in litecoin-posd/qt (MarcoFalke)
 - #16436 Do not create payment server if -disablewallet option provided (hebasto)
 - #16514 Remove unused RPCConsole::tabFocus (promag)
 - #16497 Generate bech32 addresses by default (take 2, fixup) (MarcoFalke)
@@ -1112,7 +1112,7 @@ Build system
 - #16235 Cleaned up and consolidated msbuild files (no code changes) (sipsorcery)
 - #16246 MSVC: Fix error in debug mode (Fix #16245) (NicolasDorier)
 - #16183 xtrans: Configure flags cleanup (dongcarl)
-- #16258 [MSVC]: Create the config.ini as part of bitcoind build (NicolasDorier)
+- #16258 [MSVC]: Create the config.ini as part of litecoin-posd build (NicolasDorier)
 - #16271 remove -Wall from rapidcheck build flags (fanquake)
 - #16309 [MSVC] allow user level project customization (NicolasDorier)
 - #16308 [MSVC] Copy build output to src/ automatically after build (NicolasDorier)
@@ -1333,7 +1333,7 @@ Build system
 - #16556 Fix systemd service file configuration directory setup (setpill)
 - #15615 Add log output during initial header sync (jonasschnelli)
 - #16774 Avoid unnecessary "Synchronizing blockheaders" log messages (jonasschnelli)
-- #16489 log: harmonize bitcoind logging (jonatack)
+- #16489 log: harmonize litecoin-posd logging (jonatack)
 - #16577 util: Cbufferedfile fixes and unit test (LarryRuane)
 - #16984 util: Make thread names shorter (hebasto)
 - #17038 Don't rename main thread at process level (laanwj)
@@ -1419,7 +1419,7 @@ Build system
 - #14862 Declare BLOCK_VALID_HEADER reserved (MarcoFalke)
 - #16806 Add issue templates for bug and feature request (MarcoFalke)
 - #16857 Elaborate need to re-login on Debian-based after usermod for Tor group (clashicly)
-- #16863 Add a missing closing parenthesis in the bitcoin-wallet's help (darosior)
+- #16863 Add a missing closing parenthesis in the litecoin-pos-wallet's help (darosior)
 - #16757 CChainState return values (MarcoFalke)
 - #16847 add comments clarifying how local services are advertised (jamesob)
 - #16812 Fix whitespace errs in .md files, litecoin-pos.conf, and Info.plist.in (ch4ot1c)

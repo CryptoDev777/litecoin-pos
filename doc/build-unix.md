@@ -24,7 +24,7 @@ make
 make install # optional
 ```
 
-This will build bitcoin-qt as well, if the dependencies are met.
+This will build litecoin-pos-qt as well, if the dependencies are met.
 
 Dependencies
 ---------------------
@@ -105,7 +105,7 @@ ZMQ dependencies (provides ZMQ API):
 
 GUI dependencies:
 
-If you want to build bitcoin-qt, make sure that the required packages for Qt development
+If you want to build litecoin-pos-qt, make sure that the required packages for Qt development
 are installed. Qt 5 is necessary to build the GUI.
 To build without GUI pass `--without-gui`.
 
@@ -117,7 +117,7 @@ libqrencode (optional) can be installed with:
 
     sudo apt-get install libqrencode-dev
 
-Once these are installed, they will be found by configure and a bitcoin-qt executable will be
+Once these are installed, they will be found by configure and a litecoin-pos-qt executable will be
 built by default.
 
 
@@ -147,7 +147,7 @@ libqrencode (optional) can be installed with:
 
 Notes
 -----
-The release is built with GCC and then "strip bitcoind" to strip the debug
+The release is built with GCC and then "strip litecoin-posd" to strip the debug
 symbols, which reduces the executable size by about 90%.
 
 

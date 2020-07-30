@@ -3,6 +3,7 @@
 *.exe
 *.pdb
 src/bitcoin
+src/litecoin-pos
 src/litecoin-posd
 src/litecoin-pos-cli
 src/litecoin-pos-tx
@@ -11,6 +12,8 @@ src/test/fuzz
 !src/test/fuzz/*.*
 src/test/test_bitcoin
 src/qt/test/test_bitcoin-qt
+src/test/test_litecoin-pos
+src/qt/test/test_litecoin-pos-qt
 
 # autoreconf
 Makefile.in
@@ -36,6 +39,8 @@ configure
 libtool
 src/config/bitcoin-config.h
 src/config/bitcoin-config.h.in
+src/config/litecoin-pos-config.h
+src/config/litecoin-pos-config.h.in
 src/config/stamp-h1
 src/obj
 share/setup.nsi
@@ -49,11 +54,11 @@ src/qt/forms/ui_*.h
 
 src/qt/test/moc*.cpp
 
-src/qt/bitcoin-qt.config
-src/qt/bitcoin-qt.creator
-src/qt/bitcoin-qt.creator.user
-src/qt/bitcoin-qt.files
-src/qt/bitcoin-qt.includes
+src/qt/litecoin-pos-qt.config
+src/qt/litecoin-pos-qt.creator
+src/qt/litecoin-pos-qt.creator.user
+src/qt/litecoin-pos-qt.files
+src/qt/litecoin-pos-qt.includes
 
 .deps
 .dirstamp
@@ -100,6 +105,7 @@ Makefile.am.user
 # Unit-tests
 Makefile.test
 bitcoin-qt_test
+litecoin-pos-qt_test
 
 # Resources cpp
 qrc_*.cpp

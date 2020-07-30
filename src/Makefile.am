@@ -264,7 +264,7 @@ obj/build.h: FORCE
 	  "$(abs_top_srcdir)"
 libbitcoin_util_a-clientversion.$(OBJEXT): obj/build.h
 
-# server: shared between bitcoind and bitcoin-qt
+# server: shared between litecoin-posd and litecoin-pos-qt
 # Contains code accessing mempool and chain state that is meant to be separated
 # from wallet and gui code (see node/README.md). Shared code should go in
 # libbitcoin_common or libbitcoin_util libraries, instead.
@@ -340,7 +340,7 @@ libbitcoin_zmq_a_SOURCES = \
 endif
 
 
-# wallet: shared between bitcoind and bitcoin-qt, but only linked
+# wallet: shared between litecoin-posd and litecoin-pos-qt, but only linked
 # when wallet enabled
 libbitcoin_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
@@ -456,7 +456,7 @@ libbitcoin_consensus_a_SOURCES = \
   util/strencodings.h \
   version.h
 
-# common: shared between bitcoind, and bitcoin-qt and non-server tools
+# common: shared between litecoin-posd, and litecoin-pos-qt and non-server tools
 libbitcoin_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_common_a_SOURCES = \
@@ -535,7 +535,7 @@ libbitcoin_util_a_SOURCES += compat/glibc_compat.cpp
 AM_LDFLAGS += $(COMPAT_LDFLAGS)
 endif
 
-# cli: shared between bitcoin-cli and bitcoin-qt
+# cli: shared between litecoin-pos-cli and litecoin-pos-qt
 libbitcoin_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_cli_a_SOURCES = \
@@ -547,14 +547,14 @@ libbitcoin_cli_a_SOURCES = \
 nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
-# bitcoind binary #
+# litecoin-posd binary #
 litecoin_posd_SOURCES = bitcoind.cpp
 litecoin_posd_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 litecoin_posd_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 litecoin_posd_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-litecoin_posd_SOURCES += bitcoind-res.rc
+litecoin_posd_SOURCES += litecoin-posd-res.rc
 endif
 
 litecoin_posd_LDADD = \
@@ -573,14 +573,14 @@ litecoin_posd_LDADD = \
 
 litecoin_posd_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
 
-# bitcoin-cli binary #
+# litecoin-pos-cli binary #
 litecoin_pos_cli_SOURCES = bitcoin-cli.cpp
 litecoin_pos_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
 litecoin_pos_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 litecoin_pos_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-litecoin_pos_cli_SOURCES += bitcoin-cli-res.rc
+litecoin_pos_cli_SOURCES += litecoin-pos-cli-res.rc
 endif
 
 litecoin_pos_cli_LDADD = \
@@ -592,14 +592,14 @@ litecoin_pos_cli_LDADD = \
 litecoin_pos_cli_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
 #
 
-# bitcoin-tx binary #
+# litecoin-pos-tx binary #
 litecoin_pos_tx_SOURCES = bitcoin-tx.cpp
 litecoin_pos_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 litecoin_pos_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 litecoin_pos_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-litecoin_pos_tx_SOURCES += bitcoin-tx-res.rc
+litecoin_pos_tx_SOURCES += litecoin-pos-tx-res.rc
 endif
 
 litecoin_pos_tx_LDADD = \
@@ -613,14 +613,14 @@ litecoin_pos_tx_LDADD = \
 litecoin_pos_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
-# bitcoin-wallet binary #
+# litecoin-pos-wallet binary #
 litecoin_pos_wallet_SOURCES = bitcoin-wallet.cpp
 litecoin_pos_wallet_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 litecoin_pos_wallet_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 litecoin_pos_wallet_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-litecoin_pos_wallet_SOURCES += bitcoin-wallet-res.rc
+litecoin_pos_wallet_SOURCES += litecoin-pos-wallet-res.rc
 endif
 
 litecoin_pos_wallet_LDADD = \

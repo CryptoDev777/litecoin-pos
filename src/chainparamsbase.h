@@ -9,7 +9,7 @@
 #include <string>
 
 /**
- * CBaseChainParams defines the base parameters (shared between bitcoin-cli and bitcoind)
+ * CBaseChainParams defines the base parameters (shared between litecoin-pos-cli and litecoin-posd)
  * of a given instance of the Litecoin PoS system.
  */
 class CBaseChainParams

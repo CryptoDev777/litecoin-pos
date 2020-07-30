@@ -120,9 +120,9 @@ pushd "$TARGET" || exit 1
           make
           # Move binaries, so they're in the same place as in the release download:
           mkdir bin
-          mv src/bitcoind src/bitcoin-cli src/bitcoin-tx bin
+          mv src/litecoin-posd src/litecoin-pos-cli src/litecoin-pos-tx bin
           if [ "$FUNCTIONAL_TESTS" -eq "0" ]; then
-            mv src/qt/bitcoin-qt bin
+            mv src/qt/litecoin-pos-qt bin
           fi
         }
         popd || exit 1
