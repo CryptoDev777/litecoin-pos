@@ -554,7 +554,7 @@ litecoin_posd_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 litecoin_posd_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-litecoin_posd_SOURCES += litecoin-posd-res.rc
+litecoin_posd_SOURCES += bitcoind-res.rc
 endif
 
 litecoin_posd_LDADD = \
@@ -580,7 +580,7 @@ litecoin_pos_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 litecoin_pos_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-litecoin_pos_cli_SOURCES += litecoin-pos-cli-res.rc
+litecoin_pos_cli_SOURCES += bitcoin-cli-res.rc
 endif
 
 litecoin_pos_cli_LDADD = \
@@ -599,7 +599,7 @@ litecoin_pos_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 litecoin_pos_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-litecoin_pos_tx_SOURCES += litecoin-pos-tx-res.rc
+litecoin_pos_tx_SOURCES += bitcoin-tx-res.rc
 endif
 
 litecoin_pos_tx_LDADD = \
@@ -620,7 +620,7 @@ litecoin_pos_wallet_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 litecoin_pos_wallet_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-litecoin_pos_wallet_SOURCES += litecoin-pos-wallet-res.rc
+litecoin_pos_wallet_SOURCES += bitcoin-wallet-res.rc
 endif
 
 litecoin_pos_wallet_LDADD = \
