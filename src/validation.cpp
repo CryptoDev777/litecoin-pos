@@ -1293,27 +1293,17 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
     if (nHeight == 1)  {
         nSubsidy = PREMINE_COIN;
     } else {
-        int reductions = (nHeight - 1) / consensusParams.LTCPRewardMatchStep;
-        if (reductions <= 3)
-        {
-            // Halve the reward - right shift
-            nSubsidy >>= reductions;
-        }
-        else
-        {
-            nSubsidy >>= 3;
-            reductions = (nHeight - consensusParams.LTCPRewardMatchHeight - 1) / consensusParams.nSubsidyHalvingInterval;
+       int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
+        // Force block reward to zero when right shift is undefined.
+        if (halvings >= 64)
+            return 0;
 
-            // Force block reward to zero at some point
-            if (reductions >= 64)
-                return 0;
-
-            // Subsidy is reduced by 25% every 700,000 blocks which will occur approximately every 4 years.
-            nSubsidy *= pow(0.75, reductions);
-        }
-        
+        CAmount nSubsidy = 50 * COIN;
+        // Subsidy is cut in half every 831,600 blocks
+        nSubsidy >>= halvings;
+        return nSubsidy;
+            
     }
-
     return nSubsidy;
 }
 

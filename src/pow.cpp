@@ -77,7 +77,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         } else {
             // Return the last non-special-min-difficulty-rules-block
             const CBlockIndex* pindex = pindexLast;
-            while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval(pindex->nHeight) != 0 && pindex->nBits == nTargetLimit)
+            while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nTargetLimit)
                 pindex = pindex->pprev;
             return pindex->nBits;
         }
@@ -97,13 +97,9 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
     }
 
     // Limit adjustment step
-    int64_t nTargetSpacing;
-    if (pindexLast && pindexLast->nHeight < params.LTCPRewardMatchHeight)
-        nTargetSpacing = STAKE_V1_TARGET_SPACING;
-    else
-        nTargetSpacing = params.nPowTargetSpacing;
+    int64_t nTargetSpacing = params.nPowTargetSpacing;
     int64_t nActualSpacing = pindexLast->GetBlockTime() - nFirstBlockTime;
-    int64_t nInterval = params.DifficultyAdjustmentInterval(pindexLast->nHeight + 1);
+    int64_t nInterval = params.DifficultyAdjustmentInterval();
     
     // Retarget
     const arith_uint256 bnTargetLimit = GetLimit(pindexLast->nHeight + 1, params, fProofOfStake);

@@ -86,17 +86,7 @@ struct Params {
     bool fPowNoRetargeting;
     int64_t nPowTargetSpacing;
     int64_t nPowTargetTimespan;
-    int64_t DifficultyAdjustmentInterval(const int height) const
-    {
-        int64_t targetTimeSpan;
-        if (height < LTCPDiffAdjHeight) {
-            targetTimeSpan = nPowTargetSpacing;
-        } else {
-            targetTimeSpan = nPowTargetTimespan;
-        }
-
-        return targetTimeSpan / nPowTargetSpacing;
-    }
+    int64_t DifficultyAdjustmentInterval() const { return nPowTargetTimespan / nPowTargetSpacing; }
     uint256 nMinimumChainWork;
     uint256 defaultAssumeValid;
     /** Proof of stake parameters */
