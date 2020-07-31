@@ -92,10 +92,11 @@ public:
 
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000000000");
+        consensus.nMinimumChainWork = uint256S("0x000000000000000000000000000000000000000000000000000000502fcd1698");
+        
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0xb8a8fd8f3a8cbab7f1d2e5d431eab19610ec83d4f6e421f87fa238b1d91e2f92"); //block 1000
+        consensus.defaultAssumeValid = uint256S("0x000000013fb57ddf19e1b43265fbb42320528f37e481f213e5872117b23153bf"); //block 1000
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -147,18 +148,18 @@ public:
         checkpointData = {
             {
                 { 0, uint256S("0x000002a62d284b34a40e18f27fc770bf26f7a61560ae6a072a2c95aabc60a129")},
-                { 50, uint256S("0x00000002cf301651b95bd43f3c97e871ff2359eef5b7984e90f95e86e4516c1c")}/*,
-                { 2500, uint256S("0x000001a4cee452258cd24953f8fd107db6ff5529305287de9c72ad10e589d882")},
+                { 50, uint256S("0x00000002cf301651b95bd43f3c97e871ff2359eef5b7984e90f95e86e4516c1c")},
+                { 414, uint256S("0x000000013fb57ddf19e1b43265fbb42320528f37e481f213e5872117b23153bf")}/*,
                 { 4650, uint256S("0x0000049c7cc899858dc53ddbced6687b37e7d4b094320f8adee4da13cc8802b2")}*/
 
             }
         };
 
         chainTxData = ChainTxData{
-            // Data from RPC: getchaintxstats 49 00000002cf301651b95bd43f3c97e871ff2359eef5b7984e90f95e86e4516c1c
-            /* nTime    */ 1596115764,
-            /* nTxCount */ 51,
-            /* dTxRate  */ 0.03485064011379801,
+            // Data from RPC: getchaintxstats 413 000000013fb57ddf19e1b43265fbb42320528f37e481f213e5872117b23153bf
+            /* nTime    */ 1596180485,
+            /* nTxCount */ 415,
+            /* dTxRate  */ 0.006238576456548995,
         };
     }
 };
