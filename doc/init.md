@@ -84,9 +84,9 @@ OpenRC).
 ### macOS
 
 Binary:              `/usr/local/bin/litecoin-posd`
-Configuration file:  `~/Library/Application Support/Bitcoin/litecoin-pos.conf`
-Data directory:      `~/Library/Application Support/Bitcoin`
-Lock file:           `~/Library/Application Support/Bitcoin/.lock`
+Configuration file:  `~/Library/Application Support/Litecoin-pos/litecoin-pos.conf`
+Data directory:      `~/Library/Application Support/Litecoin-pos`
+Lock file:           `~/Library/Application Support/Litecoin-pos/.lock`
 
 Installing Service Configuration
 -----------------------------------
